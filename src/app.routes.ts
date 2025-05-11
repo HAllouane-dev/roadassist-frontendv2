@@ -7,6 +7,10 @@ import { Notfound } from './app/pages/notfound/notfound';
 
 export const appRoutes: Routes = [
     {
+        path: 'auth',
+        loadChildren: () => import('./app/features/auth/routes').then((m) => m.AUTH_ROUTES) // Lazy load auth module
+    },
+    {
         path: '',
         component: AppLayout,
         children: [
