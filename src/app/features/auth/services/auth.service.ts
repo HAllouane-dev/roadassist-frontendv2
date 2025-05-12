@@ -32,11 +32,15 @@ export class AuthService {
         return this.isAuthenticatedSignal.asReadonly();
     }
 
+    checkIsAuthenticated(): boolean {
+        return this.isAuthenticatedSignal();
+    }
     /**
      * Login method to authenticate the user
      * @param loginRequest
+     * @param returnUrl
      */
-    login(loginRequest: LoginRequest): Observable<User> {
+    login(loginRequest: LoginRequest, returnUrl?: string): Observable<User> {
         return this.http.post<LoginResponse>(`${this.AUTH_ENDPOINT}/login`, loginRequest).pipe(
             tap((response) => {
                 // Store the token and refresh token in local storage
@@ -50,7 +54,24 @@ export class AuthService {
                 // store the user in local storage for remember me
                 localStorage.setItem('user', JSON.stringify(response.userResponse));
             }),
-            map((response) => response.userResponse)
+            map((response) => response.userResponse),
+            tap((user) => {
+                console.log('Navigating after login. Return URL:', returnUrl);
+                setTimeout(() => {
+                    if (returnUrl && returnUrl !== '') {
+                        this.router.navigateByUrl(returnUrl).then(
+                            (success) => console.log('Navigation success:', success),
+                            (err) => console.error('Navigation error:', err)
+                        );
+                    } else {
+                        this.redirectToDashboard();
+                    }
+                }, 100);
+            }),
+            catchError((error) => {
+                console.error('Login error:', error);
+                throw error;
+            })
         );
     }
 
@@ -93,6 +114,29 @@ export class AuthService {
                 return of(null);
             })
         );
+    }
+
+    /**
+     * Redirect to the dashboard based on the user role
+     */
+    redirectToDashboard(): void {
+        const role = this.getUserRole();
+        let dashboardUrl = '/';
+        console.log('Redirecting to dashboard. User role:', role);
+        switch (role) {
+            case 'ADMIN':
+                dashboardUrl = '/admin/dashboard';
+                break;
+            case 'OPERATOR':
+                dashboardUrl = '/operator/dashboard';
+                break;
+            case 'DRIVER':
+                dashboardUrl = '/driver/dashboard';
+                break;
+        }
+        this.router.navigate([dashboardUrl]).then(() => {
+            console.log('Navigation to dashboard successful');
+        });
     }
 
     /**
@@ -150,5 +194,13 @@ export class AuthService {
         } else if (this.isTokenExpired()) {
             this.logout();
         }
+    }
+
+    /**
+     * Method to get the user role
+     */
+    getUserRole(): string {
+        const user = this.currentUserSignal();
+        return user?.role ?? '';
     }
 }
