@@ -55,7 +55,7 @@ export class AuthService {
                 localStorage.setItem('user', JSON.stringify(response.userResponse));
             }),
             map((response) => response.userResponse),
-            tap((user) => {
+            tap(() => {
                 console.log('Navigating after login. Return URL:', returnUrl);
                 setTimeout(() => {
                     if (returnUrl && returnUrl !== '') {
@@ -90,20 +90,22 @@ export class AuthService {
         this.isAuthenticatedSignal.set(false);
 
         // Redirect to the login page
-        this.router.navigate(['/auth/login']);
+        this.router.navigate(['/auth/login']).then(() => {
+            console.log('Navigation to login page successful');
+        });
     }
 
     /**
-     * refreashToken method to refresh the token
+     * refreshToken method to refresh the token
      */
-    refreashToken(): Observable<string | null> {
-        const refreashToken = localStorage.getItem('refreshToken');
+    refreshToken(): Observable<string | null> {
+        const refreshToken = localStorage.getItem('refrehToken');
 
-        if (!refreashToken) {
+        if (!refreshToken) {
             return of(null);
         }
 
-        return this.http.post<{ token: string }>(`${this.AUTH_ENDPOINT}/refresh`, { refreshToken: refreashToken }).pipe(
+        return this.http.post<{ token: string }>(`${this.AUTH_ENDPOINT}/refresh`, { refreshToken: refreshToken }).pipe(
             tap((response) => {
                 // Store the new token in local storage
                 localStorage.setItem('token', response.token);
