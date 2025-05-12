@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -64,21 +64,33 @@ import { AuthService } from '../services/auth.service';
         <p-toast></p-toast>
     `
 })
-export class LoginComponent {
-    loginForm: FormGroup;
+export class LoginComponent implements OnInit {
     loading = false;
+    returnUrl: string = '';
+    loginForm!: FormGroup;
 
-    constructor(
-        private readonly fb: FormBuilder,
-        private readonly authService: AuthService,
-        private readonly router: Router,
-        private readonly messageService: MessageService
-    ) {
+    private readonly authService = inject(AuthService);
+    private readonly router = inject(Router);
+    private readonly messageService = inject(MessageService);
+    private readonly activatedRoute = inject(ActivatedRoute);
+    private readonly fb = inject(FormBuilder);
+
+    ngOnInit(): void {
         this.loginForm = this.fb.group({
             username: ['', [Validators.required]],
             password: ['', [Validators.required]],
             rememberMe: [false]
         });
+
+        this.returnUrl = this.activatedRoute.snapshot.queryParams['returnUrl'] ?? '';
+
+        if (this.authService.checkIsAuthenticated()) {
+            if (this.returnUrl) {
+                this.router.navigateByUrl(this.returnUrl).then((r) => {});
+            } else {
+                this.authService.redirectToDashboard();
+            }
+        }
     }
 
     /**
@@ -98,28 +110,22 @@ export class LoginComponent {
 
         this.authService.login(loginRequest).subscribe({
             next: (user) => {
+                console.log('Login successful', user);
                 this.loading = false;
 
-                this.router
-                    .navigate(['/'])
-                    .then(() => {
-                        this.messageService.add({
-                            severity: 'success',
-                            summary: 'Success',
-                            detail: 'Login successful!'
-                        });
-                    })
-                    .catch((err) => {
-                        console.error('Navigation error', err);
-                        // Gérer l'erreur de navigation si nécessaire
-                    });
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Connexion réussie',
+                    detail: 'Bienvenue sur RoadAssist Pro!'
+                });
             },
             error: (error) => {
+                console.error('Login error', error);
                 this.loading = false;
                 this.messageService.add({
                     severity: 'error',
-                    summary: 'Error',
-                    detail: error.error?.message ?? 'Login failed'
+                    summary: 'Erreur de connexion',
+                    detail: error.error?.message ?? 'Identifiants invalides'
                 });
             }
         });
