@@ -16,22 +16,22 @@ export class DashboardRouterComponent implements OnInit {
 
         switch (role) {
             case 'ADMIN':
-                this.router.navigate(['/admin/dashboard']).then((r) => {
+                this.router.navigate(['/admin/dashboard']).then(() => {
                     console.log('Navigation to admin dashboard successful');
                 });
                 break;
             case 'OPERATOR':
-                this.router.navigate(['/operator/dashboard']).then((r) => {
+                this.router.navigate(['/operator/dashboard']).then(() => {
                     console.log('Navigation to operator dashboard successful');
                 });
                 break;
             case 'DRIVER':
-                this.router.navigate(['/driver/dashboard']).then((r) => {
+                this.router.navigate(['/driver/dashboard']).then(() => {
                     console.log('Navigation to driver dashboard successful');
                 });
                 break;
             default:
-                this.router.navigate(['/access-denied']).then((r) => {
+                this.router.navigate(['/access-denied']).then(() => {
                     console.log('Navigation to access denied page');
                 }); // Redirect to an access denied page or a default route
                 break;

@@ -86,7 +86,7 @@ export class LoginComponent implements OnInit {
 
         if (this.authService.checkIsAuthenticated()) {
             if (this.returnUrl) {
-                this.router.navigateByUrl(this.returnUrl).then((r) => {});
+                this.router.navigateByUrl(this.returnUrl).then(() => {});
             } else {
                 this.authService.redirectToDashboard();
             }
