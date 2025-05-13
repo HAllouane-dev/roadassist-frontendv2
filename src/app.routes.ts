@@ -1,9 +1,7 @@
 import { Routes } from '@angular/router';
 import { AppLayout } from './app/layout/component/app.layout';
-import { Dashboard } from './app/pages/dashboard/dashboard';
-import { Documentation } from './app/pages/documentation/documentation';
-import { Landing } from './app/pages/landing/landing';
-import { Notfound } from './app/pages/notfound/notfound';
+import { authGuards } from './app/core/auth/guards/auth.guards';
+import { roleGuard } from './app/core/auth/guards/auth.roles';
 
 export const appRoutes: Routes = [
     {
@@ -13,15 +11,25 @@ export const appRoutes: Routes = [
     {
         path: '',
         component: AppLayout,
+        canActivate: [authGuards], // Guard to protect the main layout
         children: [
-            { path: '', component: Dashboard },
-            { path: 'uikit', loadChildren: () => import('./app/pages/uikit/uikit.routes') },
-            { path: 'documentation', component: Documentation },
-            { path: 'pages', loadChildren: () => import('./app/pages/pages.routes') }
+            {
+                path: '',
+                redirectTo: 'dashboard',
+                pathMatch: 'full'
+            },
+            {
+                path: 'dashboard',
+                canActivate: [authGuards],
+                loadComponent: () => import('./app/features/dashboard-router/pages/dashboard-router.component').then((m) => m.DashboardRouterComponent) // Lazy load dashboard module
+            },
+            {
+                path: 'operator',
+                canActivate: [roleGuard],
+                data: { roles: ['OPERATOR', 'ADMIN'] },
+                loadChildren: () => import('./app/features/operator/routes').then((m) => m.OPERATOR_ROUTES) // Lazy load operator module
+            }
         ]
     },
-    { path: 'landing', component: Landing },
-    { path: 'notfound', component: Notfound },
-    { path: 'auth', loadChildren: () => import('./app/pages/auth/auth.routes') },
-    { path: '**', redirectTo: '/notfound' }
+    { path: '**', redirectTo: 'auth' }
 ];
