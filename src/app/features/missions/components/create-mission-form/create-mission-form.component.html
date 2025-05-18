@@ -1,0 +1,277 @@
+<p-toast position="top-center"></p-toast>
+
+<p-card styleClass="p-4">
+    <div class="text-center mb-5">
+        <div class="text-2xl font-bold text-blue-800 mb-2">Création d'une mission d'assistance</div>
+        <div class="text-gray-500">Veuillez remplir tous les champs obligatoires (*) pour créer une nouvelle mission</div>
+    </div>
+
+    <div class="mb-6">
+        <p-steps [model]="steps" [activeIndex]="activeIndex" [readonly]="false" (activeIndexChange)="onActiveIndexChange($event)"></p-steps>
+    </div>
+
+    <div class="p-4 border-1 border-gray-200 rounded-lg bg-white">
+        <form [formGroup]="missionForm" (ngSubmit)="onSubmit()">
+            <!-- Étape 1: Informations du requérant -->
+            @if (activeIndex === 0) {
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-col">
+                        <label for="requesterName" class="font-medium mb-2">Nom du requérant *</label>
+                        <span class="p-input-icon-right w-full">
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Nom complet de la personne demandant l'assistance" tooltipPosition="right"></i>
+                            <input pInputText id="requesterName" formControlName="requesterName" [ngClass]="{ 'ng-invalid ng-dirty': submitted && f['requesterName'].errors }" placeholder="Ex: Jean Dupont" class="w-full" />
+                        </span>
+                        @if (submitted && f['requesterName'].errors?.['required']) {
+                            <small class="p-error">Le nom du requérant est obligatoire</small>
+                        }
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label for="requesterPhone" class="font-medium mb-2">Numéro de téléphone *</label>
+                        <span class="p-input-icon-right w-full">
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Numéro de téléphone pour contacter le requérant" tooltipPosition="right"></i>
+                            <input pInputText id="requesterPhone" formControlName="requesterPhone" [ngClass]="{ 'ng-invalid ng-dirty': submitted && f['requesterPhone'].errors }" placeholder="Ex: +33 6 12 34 56 78" class="w-full" />
+                        </span>
+
+                        @if (submitted && f['requesterPhone'].errors?.['required']) {
+                            <small class="p-error">Le numéro de téléphone est obligatoire</small>
+                        }
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label for="receivedAt" class="font-medium mb-2">Date et heure de réception *</label>
+                        <span class="p-input-icon-right w-full">
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Moment où la demande d'assistance a été reçue" tooltipPosition="right"></i>
+                            <p-calendar id="receivedAt" formControlName="receivedAt" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [ngClass]="{ 'ng-invalid ng-dirty': submitted && f['receivedAt'].errors }" class="w-full"></p-calendar>
+                        </span>
+                        @if (submitted && f['receivedAt'].errors?.['required']) {
+                            <small class="p-error">La date et l'heure sont obligatoires</small>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Étape 2: Détails du véhicule -->
+            @if (activeIndex === 1) {
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-col">
+                        <label for="vehicleMake" class="font-medium mb-2">Marque du véhicule *</label>
+                        <span class="p-input-icon-right w-full">
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Marque du véhicule à dépanner" tooltipPosition="right"></i>
+                            <input pInputText id="vehicleMake" formControlName="vehicleMake" [ngClass]="{ 'ng-invalid ng-dirty': submitted && f['vehicleMake'].errors }" placeholder="Ex: Renault" class="w-full" />
+                        </span>
+                        @if (submitted && f['vehicleMake'].errors?.['required']) {
+                            <small class="p-error">La marque du véhicule est obligatoire</small>
+                        }
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label for="vehicleModel" class="font-medium mb-2">Modèle du véhicule</label>
+                        <span class="p-input-icon-right w-full">
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Modèle spécifique du véhicule" tooltipPosition="right"></i>
+                            <input pInputText id="vehicleModel" formControlName="vehicleModel" placeholder="Ex: Clio" class="w-full" />
+                        </span>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label for="vehiclePlate" class="font-medium mb-2">Plaque d'immatriculation *</label>
+                        <span class="p-input-icon-right w-full">
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Numéro d'immatriculation du véhicule" tooltipPosition="right"></i>
+                            <input pInputText id="vehiclePlate" formControlName="vehiclePlate" [ngClass]="{ 'ng-invalid ng-dirty': submitted && f['vehiclePlate'].errors }" placeholder="Ex: AB-123-CD" class="w-full" />
+                        </span>
+                        @if (submitted && f['vehiclePlate'].errors?.['required']) {
+                            <small class="p-error">La plaque d'immatriculation est obligatoire</small>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Étape 3: Localisation -->
+            @if (activeIndex === 2) {
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-col">
+                        <label for="pickupAddress" class="font-medium mb-2">Adresse de récupération *</label>
+                        <span class="p-input-icon-right w-full">
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Adresse où se trouve actuellement le véhicule" tooltipPosition="right"></i>
+                            <textarea
+                                pInputTextarea
+                                id="pickupAddress"
+                                formControlName="pickupAddress"
+                                [rows]="3"
+                                [ngClass]="{ 'ng-invalid ng-dirty': submitted && f['pickupAddress'].errors }"
+                                placeholder="Ex: 1 Place de l'Hôtel de Ville, 75004 Paris"
+                                class="w-full"
+                            ></textarea>
+                        </span>
+                        @if (submitted && f['pickupAddress'].errors?.['required']) {
+                            <small class="p-error">L'adresse de récupération est obligatoire</small>
+                        }
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label for="destinationAddress" class="font-medium mb-2">Adresse de destination *</label>
+                        <span class="p-input-icon-right w-full">
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Adresse où le véhicule doit être déposé" tooltipPosition="right"></i>
+                            <textarea
+                                pInputTextarea
+                                id="destinationAddress"
+                                formControlName="destinationAddress"
+                                [rows]="3"
+                                [ngClass]="{ 'ng-invalid ng-dirty': submitted && f['destinationAddress'].errors }"
+                                placeholder="Ex: 16 Avenue de Clichy, 75017 Paris"
+                                class="w-full"
+                            ></textarea>
+                        </span>
+                        @if (submitted && f['destinationAddress'].errors?.['required']) {
+                            <small class="p-error">L'adresse de destination est obligatoire</small>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Étape 4: Détails de la mission -->
+            @if (activeIndex === 3) {
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-col">
+                        <label for="missionType" class="font-medium mb-2">Type de mission *</label>
+                        <span class="p-input-icon-right w-full">
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Nature de l'intervention à réaliser" tooltipPosition="right"></i>
+                           <p-multiSelect
+                               id="missionTypes"
+                               [options]="missionTypes"
+                               formControlName="missionTypes"
+                               optionLabel="name"
+                               optionValue="code"
+                               [placeholder]="'Sélectionner un ou plusieurs types'"
+                               [ngClass]="{'ng-invalid ng-dirty': submitted && f['missionTypes'].errors}"
+                               styleClass="w-full"
+                               [showToggleAll]="true"
+                               [filter]="true"
+                               [maxSelectedLabels]="3"
+                               [selectedItemsLabel]="'{0} types sélectionnés'"
+                           ></p-multiSelect>
+                        </span>
+                        @if (submitted && f['missionType'].errors?.['required']) {
+                            <small class="p-error">Le type de mission est obligatoire</small>
+                        }
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label for="priority" class="font-medium mb-2">Priorité</label>
+                        <span class="p-input-icon-right w-full">
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Niveau d'urgence de l'intervention" tooltipPosition="right"></i>
+                            <p-dropdown id="priority" formControlName="priority" [options]="priorityOptions" optionLabel="name" optionValue="code" placeholder="Sélectionner la priorité" styleClass="w-full"></p-dropdown>
+                        </span>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label for="notes" class="font-medium mb-2">Notes</label>
+                        <span class="p-input-icon-right w-full">
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Informations complémentaires importantes pour l'intervention" tooltipPosition="right"></i>
+                            <textarea pInputTextarea id="notes" formControlName="notes" [rows]="4" placeholder="Précisions sur la panne, état du véhicule, conditions particulières..." class="w-full"></textarea>
+                        </span>
+                    </div>
+                </div>
+            }
+
+            <!-- Étape 5: Récapitulatif -->
+            @if (activeIndex === 4) {
+                <div class="flex flex-col gap-4">
+                    <p-panel header="Informations du requérant" [toggleable]="true">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <p class="font-medium">Nom: {{ missionForm.get('requesterName')?.value }}</p>
+                            </div>
+                            <div>
+                                <p class="font-medium">Téléphone: {{ missionForm.get('requesterPhone')?.value }}</p>
+                            </div>
+                            <div class="col-span-2">
+                                <p class="font-medium">Date et heure de réception: {{ missionForm.get('receivedAt')?.value | date: 'medium' }}</p>
+                            </div>
+                        </div>
+                    </p-panel>
+
+                    <p-panel header="Informations du véhicule" [toggleable]="true">
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <p class="font-medium">Marque: {{ missionForm.get('vehicleMake')?.value }}</p>
+                            </div>
+                            <div>
+                                <p class="font-medium">Modèle: {{ missionForm.get('vehicleModel')?.value || 'Non spécifié' }}</p>
+                            </div>
+                            <div>
+                                <p class="font-medium">Immatriculation: {{ missionForm.get('vehiclePlate')?.value }}</p>
+                            </div>
+                        </div>
+                    </p-panel>
+
+                    <p-panel header="Localisation" [toggleable]="true">
+                        <div class="grid grid-cols-1 gap-3">
+                            <div>
+                                <p class="font-medium">Adresse de récupération: {{ missionForm.get('pickupAddress')?.value }}</p>
+                            </div>
+                            <div>
+                                <p class="font-medium">Adresse de destination: {{ missionForm.get('destinationAddress')?.value }}</p>
+                            </div>
+                        </div>
+                    </p-panel>
+
+                    <p-panel header="Détails de la mission" [toggleable]="true">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="col-span-2">
+                                <p class="font-medium">Types de mission:</p>
+                                <div class="flex flex-wrap gap-2 mt-1">
+                                    @for (typeCode of missionForm.get('missionTypes')?.value; track typeCode) {
+                                        <p-chip [label]="getMissionTypeName(typeCode)"
+                                                styleClass="bg-blue-100">
+                                        </p-chip>
+                                    }
+                                    @if (!missionForm.get('missionTypes')?.value?.length) {
+                                        <span>Aucun type sélectionné</span>
+                                    }
+                                </div>
+                            </div>
+                            <div>
+                                <p class="font-medium">Type de mission: {{ getMissionTypeName(missionForm.get('missionType')?.value) }}</p>
+                            </div>
+                            <div>
+                                <p class="font-medium">Priorité: {{ getPriorityName(missionForm.get('priority')?.value) }}</p>
+                            </div>
+                            <div class="col-span-2">
+                                <p class="font-medium">Notes: {{ missionForm.get('notes')?.value || 'Aucune note' }}</p>
+                            </div>
+                        </div>
+                    </p-panel>
+                </div>
+            }
+        </form>
+    </div>
+
+    <div class="flex justify-between mt-4">
+        <button pButton label="Précédent" icon="pi pi-arrow-left" [disabled]="activeIndex === 0" (click)="prevStep()" class="p-button-outlined"></button>
+
+        @if (activeIndex === steps.length - 1) {
+            <button pButton label="Soumettre" icon="pi pi-check" (click)="onSubmit()" [loading]="loading" class="p-button-success"></button>
+        }
+        @if (activeIndex !== steps.length - 1) {
+            <button pButton label="Suivant" icon="pi pi-arrow-right" iconPos="right" (click)="nextStep()"></button>
+        }
+    </div>
+</p-card>
+
+<p-dialog [(visible)]="showDialog" [header]="'Mission créée avec succès'" [modal]="true" [style]="{ width: '450px' }" [closable]="false">
+    <div class="flex flex-col items-center">
+        <div class="flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-4">
+            <i class="pi pi-check text-green-500 text-xl"></i>
+        </div>
+        <p>
+            La mission a été créée avec succès sous la référence <strong>MSSN-{{ getFormattedDate() }}-0001</strong>.
+        </p>
+        <p class="mt-2">Voulez-vous créer une autre mission ou voir les détails de celle-ci?</p>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Créer une autre mission" icon="pi pi-plus" (click)="resetForm()" class="p-button-outlined"></button>
+        <button pButton label="Voir la mission" icon="pi pi-eye" (click)="viewMission()" class="ml-2"></button>
+    </ng-template>
+</p-dialog>
