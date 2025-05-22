@@ -83,6 +83,7 @@ export class MissionDataGridComponent implements OnInit {
         this.loadMissionPriorities();
         this.loadMissionStatus();
         this.loadMissionTypes();
+        this.loadProviderTypes();
         this.loadMissions();
         this.registerCustomFilter();
     }
