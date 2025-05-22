@@ -13,4 +13,11 @@ export class MissionService {
     getMissions(): Observable<MissionResponse[]> {
         return this.httpClient.get<MissionResponse[]>(`${this.apiUrl}/missions/all`);
     }
+
+    /**
+     * Get mission by reference
+     */
+    getMissionById(id: string): Observable<MissionResponse> {
+        return this.httpClient.get<MissionResponse>(`${this.apiUrl}/missions/${id}`);
+    }
 }

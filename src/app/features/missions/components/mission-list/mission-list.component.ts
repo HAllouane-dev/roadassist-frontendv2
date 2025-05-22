@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, Signal, signal, ViewChild } from '@angular/core';
 import { Table, TableModule } from 'primeng/table';
 import { ConfirmationService, FilterService, MessageService } from 'primeng/api';
-import { MissionPriorityFormatted, MissionResponse, MissionStatusFormatted, MissionTypeFormatted } from '../../models/mission.model';
+import { MissionPriorityFormatted, MissionResponse, MissionStatusFormatted, MissionTypeFormatted, ProviderTypeFormatted } from '../../models/mission.model';
 import { MissionService } from '../../services/mission.service';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { InputIconModule } from 'primeng/inputicon';
@@ -18,8 +18,12 @@ import { RatingModule } from 'primeng/rating';
 import { RippleModule } from 'primeng/ripple';
 import { IconFieldModule } from 'primeng/iconfield';
 import { DropdownModule } from 'primeng/dropdown';
-import { missionPriorities, missionStatus, missionTypes } from '../../../../shared/constants/mission/constants';
+import { missionPriorities, missionStatus, missionTypes, providerTypes } from '../../../../shared/constants/mission/constants';
 import { Select } from 'primeng/select';
+import { Router } from '@angular/router';
+import { ConfirmDialog } from 'primeng/confirmdialog';
+import { Calendar } from 'primeng/calendar';
+import { DatePicker } from 'primeng/datepicker';
 
 @Component({
     selector: 'app-mission-list',
@@ -42,13 +46,18 @@ import { Select } from 'primeng/select';
         RippleModule,
         IconFieldModule,
         DropdownModule,
-        Select
+        Select,
+        ConfirmDialog,
+        Calendar,
+        DatePicker
     ],
     providers: [ConfirmationService, MessageService, MissionService]
 })
 export class MissionDataGridComponent implements OnInit {
+    private readonly confirmationService = inject(ConfirmationService);
     private readonly missionService = inject(MissionService);
     private readonly filterService = inject(FilterService);
+    private readonly router = inject(Router);
     private readonly loading = signal<boolean>(false);
     @ViewChild('dt1') dt1: Table | undefined;
 
@@ -60,6 +69,7 @@ export class MissionDataGridComponent implements OnInit {
     missionStatus: MissionStatusFormatted[] = [];
     missionTypes: MissionTypeFormatted[] = [];
     missionPriorities: MissionPriorityFormatted[] = [];
+    providerTypes: ProviderTypeFormatted[] = [];
 
     get isLoading(): Signal<boolean> {
         return this.loading.asReadonly();
@@ -75,6 +85,36 @@ export class MissionDataGridComponent implements OnInit {
         this.loadMissionTypes();
         this.loadMissions();
         this.registerCustomFilter();
+    }
+
+    onRowClick(mission: MissionResponse): void {
+        console.log('click to go details ', mission);
+        this.confirmationService.confirm({
+            message: `Voulez-vous voir les détails de la mission ${mission.id}?`,
+            header: 'Confirmation',
+            icon: 'pi pi-info-circle',
+            accept: () => {
+                this.navigateToMissionDetails(mission.id);
+            }
+        });
+    }
+
+    private navigateToMissionDetails(missionId: string): void {
+        console.log('Navigating to mission details for ID:', missionId);
+
+        const url = `/operator/missions/${missionId}`;
+        console.log('Navigation URL:', url);
+
+        // Ajoutez des options de navigation pour déboguer
+        this.router
+            .navigate([url], {
+                skipLocationChange: false, // Assurez-vous que l'URL change dans le navigateur
+                replaceUrl: false // Ne pas remplacer l'URL actuelle
+            })
+            .then(
+                (success) => console.log('Navigation result:', success),
+                (error) => console.error('Navigation error:', error)
+            );
     }
 
     private registerCustomFilter() {
@@ -95,15 +135,23 @@ export class MissionDataGridComponent implements OnInit {
             return value.some((type) => type.name === filter);
         });
     }
+
     private loadMissionTypes(): void {
         this.missionTypes = missionTypes;
     }
+
     private loadMissionPriorities(): void {
         this.missionPriorities = missionPriorities;
     }
+
     private loadMissionStatus(): void {
         this.missionStatus = missionStatus;
     }
+
+    private loadProviderTypes(): void {
+        this.providerTypes = providerTypes;
+    }
+
     private loadMissions(): void {
         this.loading.set(true);
         this.missionService.getMissions().subscribe({

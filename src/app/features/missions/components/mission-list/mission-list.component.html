@@ -1,5 +1,10 @@
 <div class="card">
     <div class="font-semibold text-xl mb-4">Liste des Missions</div>
+    <!-- Dialogue de confirmation -->
+    <p-confirmDialog [style]="{ width: '450px' }"></p-confirmDialog>
+
+    <!-- Messages toast -->
+    <p-toast></p-toast>
     <p-table
         #dt1
         [value]="missions"
@@ -10,7 +15,7 @@
         [showGridlines]="true"
         [paginator]="true"
         [rowsPerPageOptions]="[10, 25, 50]"
-        [globalFilterFields]="['id', 'MissionStatus', 'missionType[].name', 'requesterName', 'requesterPhone', 'vehicleMake', 'vehicleModel', 'vehiclePlate', 'missionPriority', 'pickupAddress', 'destinationAddress', 'notes']"
+        [globalFilterFields]="['id', 'MissionStatus', 'providerName', 'providerReference', 'requesterName', 'requesterPhone', 'vehicleMake', 'vehicleModel', 'vehiclePlate', 'missionPriority', 'pickupAddress', 'destinationAddress', 'notes']"
         responsiveLayout="scroll"
     >
         <ng-template #caption>
@@ -23,8 +28,7 @@
                     <p-inputicon>
                         <i class="pi pi-search"></i>
                     </p-inputicon>
-                    <input pInputText type="text" (input)="onGlobalFilter($event)"
-                           placeholder="Recherche par mot-clé" />
+                    <input pInputText type="text" (input)="onGlobalFilter($event)" placeholder="Recherche par mot-clé" />
                 </p-iconfield>
             </div>
         </ng-template>
@@ -33,8 +37,13 @@
                 <th scope="col" style="min-width: 12rem">
                     <div class="flex justify-between items-center">
                         Référence
-                        <p-columnFilter type="text" field="id" display="menu"
-                                        placeholder="Search by id"></p-columnFilter>
+                        <p-columnFilter type="text" field="id" display="menu" placeholder="Search by id"></p-columnFilter>
+                    </div>
+                </th>
+                <th scope="col" style="min-width: 12rem">
+                    <div class="flex justify-between items-center">
+                        Référence Fournisseur
+                        <p-columnFilter type="text" field="providerReference" display="menu" placeholder="Recherche par référence de fournisseur"></p-columnFilter>
                     </div>
                 </th>
                 <th scope="col" style="min-width: 10rem">
@@ -42,9 +51,7 @@
                         Type
                         <p-columnFilter field="missionType" matchMode="custom" display="menu">
                             <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                                <p-select [ngModel]="value" [options]="missionTypes" optionLabel="name"
-                                          optionValue="code" (onChange)="filterMissionTypes($event.value, filter)"
-                                          placeholder="Sélectionnez un type" [showClear]="true">
+                                <p-select [ngModel]="value" [options]="missionTypes" optionLabel="name" optionValue="code" (onChange)="filterMissionTypes($event.value, filter)" placeholder="Sélectionnez un type" [showClear]="true">
                                     <ng-template let-option pTemplate="item">
                                         <p-tag [value]="option.name" [severity]="getTypeSeverity(option.code)"></p-tag>
                                     </ng-template>
@@ -58,9 +65,7 @@
                         Statut
                         <p-columnFilter field="MissionStatus" matchMode="equals" display="menu">
                             <ng-template #filter let-value let-filter="filterCallback">
-                                <p-select [ngModel]="value" [options]="missionStatus" optionLabel="name"
-                                          optionValue="code" (onChange)="filter($event.value)"
-                                          placeholder="Sélectionnez une option" styleClass="w-full">
+                                <p-select [ngModel]="value" [options]="missionStatus" optionLabel="name" optionValue="code" (onChange)="filter($event.value)" placeholder="Sélectionnez une option" styleClass="w-full">
                                     <ng-template let-option #item>
                                         <p-tag [value]="option.name" [severity]="'secondary'"></p-tag>
                                     </ng-template>
@@ -69,17 +74,34 @@
                         </p-columnFilter>
                     </div>
                 </th>
+                <th scope="col" style="min-width: 8rem">
+                    <div class="flex justify-between items-center">
+                        Type Fournisseur
+                        <p-columnFilter field="providerType" matchMode="equals" display="menu">
+                            <ng-template #filter let-value let-filter="filterCallback">
+                                <p-select [ngModel]="value" [options]="providerTypes" optionLabel="name" optionValue="code" (onChange)="filter($event.value)" placeholder="Sélectionnez le type de fournisseur" styleClass="w-full">
+                                    <ng-template let-option #item>
+                                        <p-tag [value]="option.name" [severity]="'secondary'"></p-tag>
+                                    </ng-template>
+                                </p-select>
+                            </ng-template>
+                        </p-columnFilter>
+                    </div>
+                </th>
+                <th scope="col" style="min-width: 12rem">
+                    <div class="flex justify-between items-center">
+                        Nom Fournisseur
+                        <p-columnFilter type="text" field="providerName" display="menu" placeholder="Recherche par le nom de fournisseur"></p-columnFilter>
+                    </div>
+                </th>
                 <th scope="col" style="min-width: 14rem">
                     <div class="flex justify-between items-center">
                         Priorité
                         <p-columnFilter field="missionPriority" matchMode="equals" display="menu">
                             <ng-template #filter let-value let-filter="filterCallback">
-                                <p-select [ngModel]="value" [options]="missionPriorities" optionLabel="name"
-                                          optionValue="code" (onChange)="filter($event.value)"
-                                          placeholder="Sélectionnez une option" styleClass="w-full">
+                                <p-select [ngModel]="value" [options]="missionPriorities" optionLabel="name" optionValue="code" (onChange)="filter($event.value)" placeholder="Sélectionnez une option" styleClass="w-full">
                                     <ng-template let-option #item>
-                                        <p-tag [value]="option.name"
-                                               [severity]="getPrioritySeverity(option.code)"></p-tag>
+                                        <p-tag [value]="option.name" [severity]="getPrioritySeverity(option.code)"></p-tag>
                                     </ng-template>
                                 </p-select>
                             </ng-template>
@@ -89,65 +111,66 @@
                 <th scope="col" style="min-width: 12rem">
                     <div class="flex justify-between items-center">
                         Nom du requérant
-                        <p-columnFilter type="text" field="requesterName" display="menu"
-                                        placeholder="Recherche par nom de demandeur"></p-columnFilter>
+                        <p-columnFilter type="text" field="requesterName" display="menu" placeholder="Recherche par nom de demandeur"></p-columnFilter>
                     </div>
                 </th>
                 <th scope="col" style="min-width: 12rem">
                     <div class="flex justify-between items-center">
                         Téléphone du requérant
-                        <p-columnFilter type="text" field="requesterPhone" display="menu"
-                                        placeholder="Recherche par téléphone du demandeur"></p-columnFilter>
+                        <p-columnFilter type="text" field="requesterPhone" display="menu" placeholder="Recherche par téléphone du demandeur"></p-columnFilter>
                     </div>
                 </th>
                 <th scope="col" style="min-width: 12rem">
                     <div class="flex justify-between items-center">
                         Marque du véhicule
-                        <p-columnFilter type="text" field="vehicleMake" display="menu"
-                                        placeholder="Recherche par marque de véhicule"></p-columnFilter>
+                        <p-columnFilter type="text" field="vehicleMake" display="menu" placeholder="Recherche par marque de véhicule"></p-columnFilter>
                     </div>
                 </th>
                 <th scope="col" style="min-width: 10rem">
                     <div class="flex justify-between items-center">
                         Modèle de véhicule
-                        <p-columnFilter type="text" field="vehicleModel" display="menu"
-                                        placeholder="Recherche par modèle de véhicule"></p-columnFilter>
+                        <p-columnFilter type="text" field="vehicleModel" display="menu" placeholder="Recherche par modèle de véhicule"></p-columnFilter>
                     </div>
                 </th>
                 <th scope="col" style="min-width: 10rem">
                     <div class="flex justify-between items-center">
                         Vehicle Plate
-                        <p-columnFilter type="text" field="vehiclePlate" display="menu"
-                                        placeholder="Search by vehicle plate"></p-columnFilter>
+                        <p-columnFilter type="text" field="vehiclePlate" display="menu" placeholder="Search by vehicle plate"></p-columnFilter>
                     </div>
                 </th>
                 <th scope="col" style="min-width: 12rem">
                     <div class="flex justify-between items-center">
                         Adresse de prise en charge
-                        <p-columnFilter type="text" field="pickupAddress" display="menu"
-                                        placeholder="Recherche par adresse de ramassage"></p-columnFilter>
+                        <p-columnFilter type="text" field="pickupAddress" display="menu" placeholder="Recherche par adresse de ramassage"></p-columnFilter>
                     </div>
                 </th>
                 <th scope="col" style="min-width: 12rem">
                     <div class="flex justify-between items-center">
                         Adresse de destination
-                        <p-columnFilter type="text" field="destinationAddress" display="menu"
-                                        placeholder="Recherche par adresse de destination"></p-columnFilter>
+                        <p-columnFilter type="text" field="destinationAddress" display="menu" placeholder="Recherche par adresse de destination"></p-columnFilter>
                     </div>
                 </th>
                 <th scope="col" style="min-width: 12rem">
                     <div class="flex justify-between items-center">
                         Notes
-                        <p-columnFilter type="text" field="notes" display="menu"
-                                        placeholder="Recherche par notes"></p-columnFilter>
+                        <p-columnFilter type="text" field="notes" display="menu" placeholder="Recherche par notes"></p-columnFilter>
                     </div>
+                </th>
+                <th pSortableColumn="createdAt" scope="col" style="min-width: 6rem">
+                    <div class="flex justify-between items-center">Date de création <p-sortIcon field="createdAt" /></div>
+                </th>
+                <th pSortableColumn="receivedAt" scope="col" style="min-width: 6rem">
+                    <div class="flex justify-between items-center">Date de réception <p-sortIcon field="receivedAt" /></div>
                 </th>
             </tr>
         </ng-template>
         <ng-template #body let-mission>
-            <tr>
+            <tr class="cursor-pointer" (click)="onRowClick(mission)" (keydown.enter)="onRowClick(mission)" tabindex="0" [attr.aria-label]="'Voir détails de la mission ' + mission.id">
                 <td>
                     {{ mission.id }}
+                </td>
+                <td>
+                    {{ mission.providerReference }}
                 </td>
                 <td>
                     @for (type of mission.missionType; track type.name) {
@@ -160,9 +183,14 @@
                     {{ mission.MissionStatus }}
                 </td>
                 <td>
+                    {{ mission.providerType }}
+                </td>
+                <td>
+                    {{ mission.providerName }}
+                </td>
+                <td>
                     @if (mission.missionPriority != null) {
-                        <p-tag [value]="mission.missionPriority"
-                               [severity]="getPrioritySeverity(mission.missionPriority)"></p-tag>
+                        <p-tag [value]="mission.missionPriority" [severity]="getPrioritySeverity(mission.missionPriority)"></p-tag>
                     } @else {
                         <span class="text-gray-500">Aucune priorité</span>
                     }
@@ -190,6 +218,12 @@
                 </td>
                 <td>
                     {{ mission.notes }}
+                </td>
+                <td>
+                    {{ mission.createdAt | date: "MMM dd, yyyy 'at' hh:mm a" }}
+                </td>
+                <td>
+                    {{ mission.receivedAt | date: "MMM dd, yyyy 'at' hh:mm a" }}
                 </td>
             </tr>
         </ng-template>
