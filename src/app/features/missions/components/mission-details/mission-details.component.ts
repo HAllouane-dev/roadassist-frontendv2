@@ -1,30 +1,28 @@
+import { NgIf } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { MissionService } from '../../services/mission.service';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MissionResponse } from '../../models/mission.model';
-import { missionPriorities, missionStatus, missionTypes } from '../../../../shared/constants/mission/constants';
-import { Toast } from 'primeng/toast';
-import { ConfirmDialog } from 'primeng/confirmdialog';
-import { Tag } from 'primeng/tag';
-import { DatePipe, NgIf } from '@angular/common';
-import { TabPanel, TabView } from 'primeng/tabview';
-import { Card } from 'primeng/card';
-import { DropdownModule } from 'primeng/dropdown';
-import { Checkbox } from 'primeng/checkbox';
-import { GalleriaModule } from 'primeng/galleria';
-import { Timeline } from 'primeng/timeline';
-import { Divider } from 'primeng/divider';
-import { MultiSelect } from 'primeng/multiselect';
 import { ButtonDirective } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { ConfirmDialog } from 'primeng/confirmdialog';
+import { Divider } from 'primeng/divider';
+import { DropdownModule } from 'primeng/dropdown';
+import { GalleriaModule } from 'primeng/galleria';
 import { InputText } from 'primeng/inputtext';
+import { MultiSelect } from 'primeng/multiselect';
+import { TabPanel, TabView } from 'primeng/tabview';
+import { Tag } from 'primeng/tag';
+import { Toast } from 'primeng/toast';
+import { missionPriorities, missionStatus, missionTypes } from '../../../../shared/constants/mission/constants';
+import { MissionResponse } from '../../models/mission.model';
+import { MissionService } from '../../services/mission.service';
 
 @Component({
     selector: 'app-mission-details',
     standalone: true,
     templateUrl: './mission-details.component.html',
-    imports: [Toast, ConfirmDialog, Tag, DatePipe, TabView, TabPanel, Card, ReactiveFormsModule, NgIf, DropdownModule, Checkbox, GalleriaModule, Timeline, Divider, MultiSelect, ButtonDirective, InputText],
+    imports: [Toast, ConfirmDialog, Tag, TabView, TabPanel, Card, ReactiveFormsModule, NgIf, DropdownModule, GalleriaModule, Divider, MultiSelect, ButtonDirective, InputText],
     providers: [MessageService, ConfirmationService, MissionService]
 })
 export class MissionDetailsComponent implements OnInit {
