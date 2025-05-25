@@ -1,29 +1,27 @@
-import { Component, inject, OnInit, Signal, signal, ViewChild } from '@angular/core';
-import { Table, TableModule } from 'primeng/table';
-import { ConfirmationService, FilterService, MessageService } from 'primeng/api';
-import { MissionPriorityFormatted, MissionResponse, MissionStatusFormatted, MissionTypeFormatted, ProviderTypeFormatted } from '../../models/mission.model';
-import { MissionService } from '../../services/mission.service';
-import { MultiSelectModule } from 'primeng/multiselect';
-import { InputIconModule } from 'primeng/inputicon';
-import { TagModule } from 'primeng/tag';
-import { InputTextModule } from 'primeng/inputtext';
-import { SliderModule } from 'primeng/slider';
-import { ProgressBarModule } from 'primeng/progressbar';
-import { ToggleButtonModule } from 'primeng/togglebutton';
-import { ToastModule } from 'primeng/toast';
 import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit, Signal, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { ConfirmationService, FilterService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { ConfirmDialog } from 'primeng/confirmdialog';
+import { DropdownModule } from 'primeng/dropdown';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { InputTextModule } from 'primeng/inputtext';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { ProgressBarModule } from 'primeng/progressbar';
 import { RatingModule } from 'primeng/rating';
 import { RippleModule } from 'primeng/ripple';
-import { IconFieldModule } from 'primeng/iconfield';
-import { DropdownModule } from 'primeng/dropdown';
-import { missionPriorities, missionStatus, missionTypes, providerTypes } from '../../../../shared/constants/mission/constants';
 import { Select } from 'primeng/select';
-import { Router } from '@angular/router';
-import { ConfirmDialog } from 'primeng/confirmdialog';
-import { Calendar } from 'primeng/calendar';
-import { DatePicker } from 'primeng/datepicker';
+import { SliderModule } from 'primeng/slider';
+import { Table, TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
+import { ToastModule } from 'primeng/toast';
+import { ToggleButtonModule } from 'primeng/togglebutton';
+import { missionPriorities, missionStatus, missionTypes, providerTypes } from '../../../../shared/constants/mission/constants';
+import { MissionPriorityFormatted, MissionResponse, MissionStatusFormatted, MissionTypeFormatted, ProviderTypeFormatted } from '../../models/mission.model';
+import { MissionService } from '../../services/mission.service';
 
 @Component({
     selector: 'app-mission-list',
@@ -47,9 +45,7 @@ import { DatePicker } from 'primeng/datepicker';
         IconFieldModule,
         DropdownModule,
         Select,
-        ConfirmDialog,
-        Calendar,
-        DatePicker
+        ConfirmDialog
     ],
     providers: [ConfirmationService, MessageService, MissionService]
 })
