@@ -24,6 +24,20 @@ export interface MissionResponse {
     missionStatusHistory: MissionStatusHistory[];
 }
 
+export interface MissionUpdateRequest {
+    missionType: MissionTypeEnum[];
+    MissionStatus: MissionStatusEnum;
+    requesterName: string;
+    requesterPhone: string;
+    vehicleMake: string;
+    vehicleModel: string;
+    vehiclePlate: string;
+    pickupAddress: string;
+    destinationAddress: string;
+    missionPriority: MissionPriorityEnum;
+    notes: string;
+}
+
 export interface MissionRequest {}
 
 export interface MissionStatusFormatted {
