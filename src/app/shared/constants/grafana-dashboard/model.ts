@@ -9,7 +9,8 @@ export interface DashboardPanel {
     isLoading?: boolean;
 }
 
-export interface RefreshOption {
+export interface TimeRangeOption {
     label: string;
     value: string;
+    fromOffset: number;
 }

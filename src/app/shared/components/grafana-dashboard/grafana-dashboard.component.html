@@ -11,11 +11,8 @@
             </div>
 
             <div class="p-toolbar-group-end">
-                <!-- Sélecteur de rafraîchissement -->
-                <p-dropdown [options]="refreshOptions()" [(ngModel)]="selectedRefresh" (onChange)="onRefreshChange($event)" placeholder="Rafraîchissement" class="mr-2"> </p-dropdown>
-
-                <!-- Bouton pour rafraîchir manuellement -->
-                <p-button icon="pi pi-refresh" severity="secondary" (onClick)="refreshAllDashboards()" [loading]="isRefreshing()" pTooltip="Actualiser tous les dashboards" tooltipPosition="bottom" class="mr-2"> </p-button>
+                <!-- Sélecteur de période de temps -->
+                <p-dropdown [options]="timeRangeOptions()" [(ngModel)]="selectedTimeRange" (onChange)="onTimeRangeChange($event)" placeholder="Période de temps" optionLabel="label" optionValue="value" class="mr-2"> </p-dropdown>
 
                 <!-- Bouton plein écran global -->
                 <p-button
@@ -84,18 +81,16 @@
                 <ng-template pTemplate="content">
                     <div class="panel-content" [style.height.px]="getPanelHeight(panel)">
                         <!-- Skeleton loader pendant le chargement -->
-                        @if (panel.isLoading) {
-                            <div class="loading-container">
-                                <p-skeleton height="100%" width="100%"></p-skeleton>
-                                <div class="loading-overlay">
-                                    <i class="pi pi-spin pi-spinner text-3xl text-primary"></i>
-                                    <p class="mt-2 text-color-secondary">Chargement du dashboard...</p>
-                                </div>
+                        <div *ngIf="panel.isLoading" class="loading-container">
+                            <p-skeleton height="100%" width="100%"></p-skeleton>
+                            <div class="loading-overlay">
+                                <i class="pi pi-spin pi-spinner text-3xl text-primary"></i>
+                                <p class="mt-2 text-color-secondary">Chargement du dashboard...</p>
                             </div>
-                        } @else {
-                            <!-- iFrame Grafana -->
-                            <iframe [title]="panel.title" [src]="getSafeUrl(panel.iframeUrl)" [width]="'100%'" [height]="'100%'" class="grafana-iframe border-round"> </iframe>
-                        }
+                        </div>
+
+                        <!-- iFrame Grafana -->
+                        <iframe [title]="panel.title" [src]="getSafeUrl(panel.iframeUrl)" [width]="'100%'" [height]="'100%'" class="grafana-iframe border-round"> </iframe>
                     </div>
                 </ng-template>
             </p-card>

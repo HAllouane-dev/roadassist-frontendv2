@@ -11,7 +11,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ToolbarModule } from 'primeng/toolbar';
 import { TooltipModule } from 'primeng/tooltip';
-import { DashboardPanel, RefreshOption } from '../../constants/grafana-dashboard/model';
+import { DashboardPanel, TimeRangeOption } from '../../constants/grafana-dashboard/model';
 
 @Component({
     selector: 'app-grafana-dashboard',
@@ -34,50 +34,60 @@ export class GrafanaDashboardComponent implements OnInit, OnDestroy {
         {
             id: 'roadassist-panel-5',
             title: 'Métriques Système',
-            description: 'Distribution des points de destination et des missions',
+            description: "Vue d'ensemble des performances système",
             iframeUrl: 'http://localhost:3000/d-solo/fe5f05a1-8806-4da1-af4c-c1cecd98a160/roadassist?orgId=1&from=1745348749130&to=1747940749130&timezone=Africa%2FCasablanca&refresh=5s&panelId=5',
             width: 450,
-            height: 300,
+            height: 450,
             category: 'system',
             isLoading: true
         },
         {
+            id: 'mission-dashboard-panel-1',
+            title: 'Dashboard Missions',
+            description: 'Suivi des missions en temps réel',
+            iframeUrl: 'http://localhost:3000/d-solo/39cf0f8c-ed0e-431c-b938-9009cbaddbe1/mission-dashboard?orgId=1&from=1747501051254&to=1747522651254&timezone=browser&panelId=1',
+            width: 450,
+            height: 450,
+            category: 'missions',
+            isLoading: true
+        },
+        {
             id: 'roadassist-panel-3',
-            title: 'Métriques Missions Urgentes',
-            description: 'La liste des missions urgentes',
+            title: 'Métriques Utilisateurs',
+            description: 'Activité et performance des utilisateurs',
             iframeUrl: 'http://localhost:3000/d-solo/fe5f05a1-8806-4da1-af4c-c1cecd98a160/roadassist?orgId=1&from=1745349015384&to=1747941015384&timezone=Africa%2FCasablanca&refresh=5s&panelId=3',
             width: 450,
-            height: 300,
-            category: 'metrics',
+            height: 450,
+            category: 'users',
             isLoading: true
         },
         {
             id: 'roadassist-panel-1',
-            title: 'Métriques Missions Par Priorité',
-            description: 'Nombre de missions par priorité',
+            title: 'Vue Générale',
+            description: 'Dashboard principal avec KPI globaux',
             iframeUrl: 'http://localhost:3000/d-solo/fe5f05a1-8806-4da1-af4c-c1cecd98a160/roadassist?orgId=1&from=1745349030381&to=1747941030381&timezone=Africa%2FCasablanca&refresh=5s&panelId=1',
             width: 450,
-            height: 300,
+            height: 450,
             category: 'metrics',
             isLoading: true
         },
         {
             id: 'roadassist-panel-4',
-            title: 'Métriques Missions par État',
-            description: 'Nombre de missions par type état',
+            title: 'Performances Réseau',
+            description: 'Latence et disponibilité des services',
             iframeUrl: 'http://localhost:3000/d-solo/fe5f05a1-8806-4da1-af4c-c1cecd98a160/roadassist?orgId=1&from=1745349040381&to=1747941040381&timezone=Africa%2FCasablanca&refresh=5s&panelId=4',
             width: 450,
-            height: 300,
-            category: 'metrics',
+            height: 450,
+            category: 'system',
             isLoading: true
         },
         {
             id: 'roadassist-panel-6',
-            title: 'Métriques Missions par Provider',
-            description: 'Nombre de missions par type de provider',
+            title: 'Analytics Avancés',
+            description: 'Analyses détaillées et tendances',
             iframeUrl: 'http://localhost:3000/d-solo/fe5f05a1-8806-4da1-af4c-c1cecd98a160/roadassist?orgId=1&from=1745349055393&to=1747941055393&timezone=Africa%2FCasablanca&refresh=5s&panelId=6',
             width: 450,
-            height: 300,
+            height: 450,
             category: 'metrics',
             isLoading: true
         }
@@ -91,9 +101,6 @@ export class GrafanaDashboardComponent implements OnInit, OnDestroy {
 
     // Signal pour la catégorie sélectionnée
     selectedCategory = signal<string>('all');
-
-    // Signal pour l'état de rafraîchissement
-    isRefreshing = signal<boolean>(false);
 
     // ⭐ COMPUTED - Pourquoi utiliser computed ?
     // computed() crée une valeur dérivée qui se met à jour automatiquement
@@ -121,33 +128,37 @@ export class GrafanaDashboardComponent implements OnInit, OnDestroy {
         { label: 'Système', value: 'system' }
     ]);
 
-    // Options de rafraîchissement
-    refreshOptions = signal<RefreshOption[]>([
-        { label: '5 secondes', value: '5s' },
-        { label: '10 secondes', value: '10s' },
-        { label: '30 secondes', value: '30s' },
-        { label: '1 minute', value: '1m' },
-        { label: '5 minutes', value: '5m' }
+    // Options de période de temps
+    timeRangeOptions = signal<TimeRangeOption[]>([
+        { label: 'Dernière heure', value: '1h', fromOffset: 60 * 60 * 1000 },
+        { label: 'Dernières 6 heures', value: '6h', fromOffset: 6 * 60 * 60 * 1000 },
+        { label: 'Dernières 12 heures', value: '12h', fromOffset: 12 * 60 * 60 * 1000 },
+        { label: 'Dernières 24 heures', value: '24h', fromOffset: 24 * 60 * 60 * 1000 },
+        { label: 'Derniers 7 jours', value: '7d', fromOffset: 7 * 24 * 60 * 60 * 1000 },
+        { label: 'Derniers 30 jours', value: '30d', fromOffset: 30 * 24 * 60 * 60 * 1000 },
+        { label: 'Derniers 90 jours', value: '90d', fromOffset: 90 * 24 * 60 * 60 * 1000 }
     ]);
 
     // Variables pour la gestion
-    selectedRefresh = '30s';
+    selectedTimeRange = '24h';
     showErrorDialog = false;
-    private refreshInterval?: number;
+    private readonly loadingTimeouts = new Map<string, number>();
 
     ngOnInit() {
-        // Simulation du chargement initial des panels
-        this.simulateInitialLoading();
+        // Chargement initial avec timeout de sécurité
+        this.loadInitialPanels();
 
-        // Démarrer le rafraîchissement automatique
-        this.startAutoRefresh();
+        // Appliquer la période de temps par défaut
+        this.updateAllPanelsTimeRange();
+
+        // Filtrer les erreurs Grafana non critiques (optionnel)
+        this.setupErrorFiltering();
     }
 
     ngOnDestroy() {
-        // Nettoyer l'intervalle de rafraîchissement
-        if (this.refreshInterval) {
-            clearInterval(this.refreshInterval);
-        }
+        // Nettoyer tous les timeouts
+        this.loadingTimeouts.forEach((timeout) => clearTimeout(timeout));
+        this.loadingTimeouts.clear();
     }
 
     // ⭐ Pourquoi cette méthode ?
@@ -212,45 +223,117 @@ export class GrafanaDashboardComponent implements OnInit, OnDestroy {
         return panel.height || 400; // Hauteur par défaut
     }
 
-    // Rafraîchir tous les dashboards
+    // Rafraîchir tous les dashboards manuellement
     refreshAllDashboards(): void {
-        this.isRefreshing.set(true);
-
         // Marquer tous les panels comme en cours de chargement
         this.panels.update((panels) => panels.map((panel) => ({ ...panel, isLoading: true })));
 
-        // Simuler le rafraîchissement (dans un vrai projet, ici on rechargerait les iframes)
+        // Mettre à jour toutes les URLs avec la nouvelle période
+        this.updateAllPanelsTimeRange();
+
+        // Timeout de sécurité pour arrêter le loading après 5 secondes
         setTimeout(() => {
             this.panels.update((panels) => panels.map((panel) => ({ ...panel, isLoading: false })));
-            this.isRefreshing.set(false);
-        }, 2000);
+        }, 5000);
     }
 
-    // Rafraîchir un panel spécifique
+    // Gestion du changement de période de temps
+    onTimeRangeChange(event: any): void {
+        this.selectedTimeRange = event.value;
+        console.log(`Changement de période: ${this.selectedTimeRange}`);
+        this.updateAllPanelsTimeRange();
+    }
+
+    // Mettre à jour toutes les URLs des panels avec la nouvelle période
+    updateAllPanelsTimeRange(): void {
+        const timeRange = this.timeRangeOptions().find((option) => option.value === this.selectedTimeRange);
+        if (!timeRange) return;
+
+        const now = Date.now();
+        const from = now - timeRange.fromOffset;
+        const to = now;
+
+        console.log(`Mise à jour de toutes les URLs avec from=${from} et to=${to}`);
+
+        this.panels.update((panels) =>
+            panels.map((panel) => ({
+                ...panel,
+                iframeUrl: this.updateUrlTimeRange(panel.iframeUrl, from, to)
+            }))
+        );
+    }
+
+    // Mettre à jour une URL spécifique avec les paramètres from/to
+    private updateUrlTimeRange(url: string, from: number, to: number): string {
+        let updatedUrl = url;
+
+        // Remplacer ou ajouter le paramètre 'from'
+        if (updatedUrl.includes('from=')) {
+            updatedUrl = updatedUrl.replace(/from=\d+/, `from=${from}`);
+        } else {
+            updatedUrl += `&from=${from}`;
+        }
+
+        // Remplacer ou ajouter le paramètre 'to'
+        if (updatedUrl.includes('to=')) {
+            updatedUrl = updatedUrl.replace(/to=\d+/, `to=${to}`);
+        } else {
+            updatedUrl += `&to=${to}`;
+        }
+
+        return updatedUrl;
+    }
+
+    // Rafraîchir un panel spécifique (simplifié)
     refreshPanel(panelId: string): void {
+        // Nettoyer le timeout existant
+        const existingTimeout = this.loadingTimeouts.get(panelId);
+        if (existingTimeout) {
+            clearTimeout(existingTimeout);
+        }
+
         this.panels.update((panels) => panels.map((panel) => (panel.id === panelId ? { ...panel, isLoading: true } : panel)));
 
-        // Simuler le chargement
-        setTimeout(() => {
+        // Timeout de sécurité de 3 secondes pour ce panel
+        const timeoutId = window.setTimeout(() => {
             this.panels.update((panels) => panels.map((panel) => (panel.id === panelId ? { ...panel, isLoading: false } : panel)));
-        }, 1500);
+            this.loadingTimeouts.delete(panelId);
+        }, 3000);
+
+        this.loadingTimeouts.set(panelId, timeoutId);
     }
 
-    // Gestion du changement d'intervalle de rafraîchissement
-    onRefreshChange(event: any): void {
-        this.selectedRefresh = event.value;
-        this.startAutoRefresh();
-    }
+    // Forcer l'arrêt du chargement d'un panel
+    stopPanelLoading(panelId: string): void {
+        const existingTimeout = this.loadingTimeouts.get(panelId);
+        if (existingTimeout) {
+            clearTimeout(existingTimeout);
+            this.loadingTimeouts.delete(panelId);
+        }
 
-    // Callback quand une iframe se charge
-    onIframeLoad(panelId: string): void {
         this.panels.update((panels) => panels.map((panel) => (panel.id === panelId ? { ...panel, isLoading: false } : panel)));
     }
 
-    // Callback en cas d'erreur de chargement d'iframe
-    onIframeError(panelId: string): void {
-        this.panels.update((panels) => panels.map((panel) => (panel.id === panelId ? { ...panel, isLoading: false } : panel)));
-        this.showErrorDialog = true;
+    // Arrêter tous les chargements
+    stopAllLoading(): void {
+        // Nettoyer tous les timeouts
+        this.loadingTimeouts.forEach((timeout) => clearTimeout(timeout));
+        this.loadingTimeouts.clear();
+
+        // Arrêter le loading de tous les panels
+        this.panels.update((panels) => panels.map((panel) => ({ ...panel, isLoading: false })));
+    }
+
+    // Vérifier si une iframe est bloquée (méthode simple)
+    isIframeBlocked(panel: DashboardPanel): boolean {
+        // Pour l'instant, on suppose que si l'URL contient localhost et qu'on n'est pas sur localhost,
+        // alors c'est bloqué
+        return panel.iframeUrl.includes('localhost') && !window.location.hostname.includes('localhost');
+    }
+
+    // Ouvrir l'URL dans un nouvel onglet
+    openInNewTab(url: string): void {
+        window.open(url, '_blank', 'noopener,noreferrer');
     }
 
     // Réessayer les panels en échec
@@ -259,44 +342,43 @@ export class GrafanaDashboardComponent implements OnInit, OnDestroy {
         this.refreshAllDashboards();
     }
 
-    // Simulation du chargement initial
-    private simulateInitialLoading(): void {
-        // Charger les panels un par un avec un délai
+    // Chargement initial avec timeout de sécurité
+    private loadInitialPanels(): void {
         this.panels().forEach((panel, index) => {
-            setTimeout(
-                () => {
-                    this.setPanelLoadingFalse(panel.id);
-                },
-                (index + 1) * 800
-            );
+            // Délai échelonné pour éviter de surcharger le navigateur
+            setTimeout(() => {
+                // Créer un timeout de sécurité pour chaque panel
+                const timeoutId = window.setTimeout(() => {
+                    this.handlePanelTimeout(panel.id);
+                }, 4000); // 4 secondes de timeout
+
+                this.loadingTimeouts.set(panel.id, timeoutId);
+            }, index * 500); // Délai de 500ms entre chaque panel
         });
     }
 
-    // Méthode pour mettre à jour isLoading à false pour un panel donné
-    private setPanelLoadingFalse(panelId: string): void {
+    private handlePanelTimeout(panelId: string): void {
         this.panels.update((panels) => panels.map((p) => (p.id === panelId ? { ...p, isLoading: false } : p)));
+        this.loadingTimeouts.delete(panelId);
+        console.log(`Timeout de chargement pour le panel ${panelId}`);
     }
 
-    // Démarrer le rafraîchissement automatique
-    private startAutoRefresh(): void {
-        if (this.refreshInterval) {
-            clearInterval(this.refreshInterval);
-        }
+    // Filtrer les erreurs Grafana non critiques (optionnel)
+    private setupErrorFiltering(): void {
+        // Capture les erreurs de la console pour les filtrer
+        const originalError = console.error;
+        console.error = (...args) => {
+            const message = args.join(' ');
 
-        const intervalMs = this.parseRefreshInterval(this.selectedRefresh);
-        console.log(`Démarrage du rafraîchissement automatique toutes les ${intervalMs} ms`);
-        if (intervalMs > 0) {
-            this.refreshInterval = window.setInterval(() => {
-                this.refreshAllDashboards();
-            }, intervalMs);
-        }
-    }
+            // Filtrer les erreurs de plugins Grafana non critiques
+            if (message.includes('[Plugins] Failed to preload plugin') || message.includes('grafana-pyroscope-app') || message.includes('Unknown Plugin')) {
+                // Log silencieux pour le debug (optionnel)
+                console.warn('🔇 Erreur Grafana filtrée:', message);
+                return;
+            }
 
-    // Convertir l'intervalle en millisecondes
-    private parseRefreshInterval(interval: string): number {
-        const num = parseInt(interval);
-        if (interval.endsWith('s')) return num * 1000;
-        if (interval.endsWith('m')) return num * 60 * 1000;
-        return 0;
+            // Laisser passer les autres erreurs
+            originalError.apply(console, args);
+        };
     }
 }
