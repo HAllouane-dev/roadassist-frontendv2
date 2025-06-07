@@ -1,0 +1,110 @@
+.grafana-dashboard-container {
+    padding: 1rem;
+    min-height: 100vh;
+    background: var(--surface-ground);
+}
+
+.dashboard-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+}
+
+.category-filters {
+    position: sticky;
+    top: 80px;
+    z-index: 999;
+    background: var(--surface-ground);
+    padding: 0.5rem 0;
+}
+
+.category-filter-btn {
+    transition: all 0.3s ease;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.fullscreen-grid {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2000;
+    background: var(--surface-ground);
+    padding: 1rem;
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+}
+
+.dashboard-panel {
+    transition: all 0.3s ease;
+    min-height: 400px;
+}
+
+.panel-fullscreen {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 2000;
+    grid-column: 1 !important;
+}
+
+.panel-content {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--border-radius);
+}
+
+.grafana-iframe {
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.loading-container {
+    position: relative;
+    height: 100%;
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .grafana-dashboard-container {
+        padding: 0.5rem;
+    }
+
+    .dashboard-header .p-toolbar-group-end > * {
+        margin: 0.25rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    }
+}
+
+@media (min-width: 1600px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}

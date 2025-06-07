@@ -1,4 +1,4 @@
-import { MissionPriorityFormatted, MissionStatusFormatted, MissionTypeFormatted } from '../../../features/missions/models/mission.model';
+import { MissionPriorityFormatted, MissionStatusFormatted, MissionTypeFormatted, ProviderTypeFormatted } from '../../../features/missions/models/mission.model';
 
 export const missionStatus: MissionStatusFormatted[] = [
     { name: 'Created', code: 'CREATED' },
@@ -26,4 +26,10 @@ export const missionPriorities: MissionPriorityFormatted[] = [
     { name: 'Normal', code: 'NORMAL' },
     { name: 'High', code: 'HIGH' },
     { name: 'Urgent', code: 'URGENT' }
+];
+
+export const providerTypes: ProviderTypeFormatted[] = [
+    { name: 'International', code: 'INTERNATIONAL' },
+    { name: 'National', code: 'NATIONAL' },
+    { name: 'Private', code: 'PRIVATE' }
 ];

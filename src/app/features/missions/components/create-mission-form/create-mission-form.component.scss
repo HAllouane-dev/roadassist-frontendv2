@@ -1,0 +1,683 @@
+/* create-mission-form.component.scss */
+/* Styles pour la validation avec PrimeNG et template Sakai */
+
+/* =====================================================
+   VARIABLES SAKAI THEME
+   ===================================================== */
+:root {
+    --primary-color: #3b82f6;
+    --primary-color-text: #ffffff;
+    --success-color: #10b981;
+    --danger-color: #ef4444;
+    --warning-color: #f59e0b;
+    --info-color: #06b6d4;
+    --surface-0: #ffffff;
+    --surface-50: #f9fafb;
+    --surface-100: #f3f4f6;
+    --surface-200: #e5e7eb;
+    --surface-300: #d1d5db;
+    --surface-400: #9ca3af;
+    --surface-500: #6b7280;
+    --surface-600: #4b5563;
+    --surface-700: #374151;
+    --surface-800: #1f2937;
+    --surface-900: #111827;
+    --text-color: #374151;
+    --text-color-secondary: #6b7280;
+}
+
+/* =====================================================
+     CONTENEUR PRINCIPAL
+     ===================================================== */
+.mission-form-container {
+    background: var(--surface-0);
+    border-radius: 12px;
+    box-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.1),
+        0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* =====================================================
+     FEEDBACK DE VALIDATION
+     ===================================================== */
+.validation-feedback {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease-in-out;
+
+    &.valid-feedback {
+        color: var(--success-color);
+        display: flex;
+
+        .pi {
+            font-size: 1rem;
+            color: var(--success-color);
+        }
+
+        /* Pour PrimeIcons au lieu de FontAwesome */
+        &::before {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2310B981'%3e%3cpath fill-rule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clip-rule='evenodd'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-size: contain;
+            margin-right: 4px;
+            flex-shrink: 0;
+        }
+    }
+
+    &.invalid-feedback {
+        color: var(--danger-color);
+        display: flex;
+
+        .pi {
+            font-size: 1rem;
+            color: var(--danger-color);
+        }
+
+        &::before {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23EF4444'%3e%3cpath fill-rule='evenodd' d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z' clip-rule='evenodd'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-size: contain;
+            margin-right: 4px;
+            flex-shrink: 0;
+        }
+    }
+
+    /* Animation d'apparition */
+    animation: fadeInValidation 0.3s ease-in-out;
+}
+
+@keyframes fadeInValidation {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =====================================================
+     ÉTATS DES CHAMPS DE FORMULAIRE
+     ===================================================== */
+
+/* Champs invalides */
+.ng-invalid.ng-dirty,
+.ng-invalid.ng-touched {
+    &.p-inputtext,
+    &.p-dropdown,
+    &.p-multiselect,
+    &.p-calendar {
+        border-color: var(--danger-color) !important;
+        box-shadow: 0 0 0 0.2rem rgba(239, 68, 68, 0.2) !important;
+    }
+
+    /* Pour les textareas */
+    &.p-inputtextarea {
+        border-color: var(--danger-color) !important;
+        box-shadow: 0 0 0 0.2rem rgba(239, 68, 68, 0.2) !important;
+    }
+}
+
+/* Champs valides */
+.ng-valid.ng-dirty:not(.ng-pending),
+.ng-valid.ng-touched:not(.ng-pending) {
+    &.p-inputtext,
+    &.p-dropdown,
+    &.p-multiselect,
+    &.p-calendar {
+        border-color: var(--success-color) !important;
+        box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.2) !important;
+    }
+
+    /* Pour les textareas */
+    &.p-inputtextarea {
+        border-color: var(--success-color) !important;
+        box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.2) !important;
+    }
+}
+
+/* Champs en attente de validation asynchrone */
+.ng-pending {
+    &.p-inputtext,
+    &.p-dropdown,
+    &.p-multiselect,
+    &.p-calendar {
+        border-color: var(--warning-color) !important;
+        background-color: rgba(245, 158, 11, 0.05) !important;
+    }
+}
+
+/* =====================================================
+     ICÔNES DE VALIDATION
+     ===================================================== */
+.validation-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    z-index: 10;
+
+    &.success {
+        color: var(--success-color);
+    }
+
+    &.error {
+        color: var(--danger-color);
+    }
+
+    &.pending {
+        color: var(--warning-color);
+        animation: spin 1s linear infinite;
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: translateY(-50%) rotate(0deg);
+    }
+    100% {
+        transform: translateY(-50%) rotate(360deg);
+    }
+}
+
+/* =====================================================
+     SPINNER DE VALIDATION ASYNCHRONE
+     ===================================================== */
+.validation-spinner {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--warning-color);
+    font-size: 14px;
+    z-index: 10;
+
+    .pi-spin {
+        animation: spin 1s linear infinite;
+    }
+}
+
+/* =====================================================
+     MESSAGES D'ERREUR PRIMENG
+     ===================================================== */
+.p-error {
+    color: var(--danger-color) !important;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &::before {
+        content: '';
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23EF4444'%3e%3cpath fill-rule='evenodd' d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z' clip-rule='evenodd'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-size: contain;
+        flex-shrink: 0;
+    }
+}
+
+/* =====================================================
+     CONTENEURS DE CHAMPS
+     ===================================================== */
+.field-container {
+    position: relative;
+    margin-bottom: 1.5rem;
+
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--text-color);
+        font-size: 0.875rem;
+
+        &.required::after {
+            content: ' *';
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+    }
+
+    /* Conteneur avec icône d'information */
+    .p-input-icon-right {
+        position: relative;
+
+        .pi-info-circle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+            font-size: 1rem;
+            z-index: 5;
+            cursor: help;
+
+            &:hover {
+                color: var(--primary-color);
+                opacity: 0.8;
+            }
+        }
+
+        /* Ajuster le padding pour faire de la place à l'icône */
+        input,
+        .p-dropdown,
+        .p-multiselect {
+            padding-right: 2.5rem !important;
+        }
+    }
+}
+
+/* =====================================================
+     ÉTAPES DE FORMULAIRE
+     ===================================================== */
+.p-steps {
+    margin-bottom: 2rem;
+
+    .p-steps-item {
+        &.p-highlight {
+            .p-steps-number {
+                background-color: var(--primary-color);
+                color: var(--primary-color-text);
+            }
+
+            .p-steps-title {
+                color: var(--primary-color);
+                font-weight: 600;
+            }
+        }
+
+        &:not(.p-highlight):not(.p-disabled) {
+            .p-steps-number {
+                background-color: var(--surface-100);
+                color: var(--text-color-secondary);
+                border: 2px solid var(--surface-300);
+            }
+
+            &:hover .p-steps-number {
+                background-color: var(--surface-200);
+                border-color: var(--primary-color);
+            }
+        }
+
+        &.p-disabled {
+            .p-steps-number {
+                background-color: var(--surface-50);
+                color: var(--text-color-secondary);
+                opacity: 0.6;
+            }
+
+            .p-steps-title {
+                color: var(--text-color-secondary);
+                opacity: 0.6;
+            }
+        }
+    }
+}
+
+/* =====================================================
+     PANNEAUX DE RÉCAPITULATIF
+     ===================================================== */
+.p-panel {
+    margin-bottom: 1rem;
+
+    .p-panel-header {
+        background-color: var(--surface-50);
+        border-bottom: 1px solid var(--surface-200);
+        padding: 1rem;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .p-panel-content {
+        padding: 1.5rem 1rem;
+        background-color: var(--surface-0);
+
+        .grid {
+            gap: 1rem;
+
+            p {
+                margin: 0;
+                color: var(--text-color);
+                font-size: 0.9rem;
+
+                &.font-medium {
+                    font-weight: 500;
+                }
+            }
+        }
+    }
+}
+
+/* =====================================================
+     CHIPS DE TYPES DE MISSION
+     ===================================================== */
+.p-chip {
+    &.bg-blue-100 {
+        background-color: rgba(59, 130, 246, 0.1) !important;
+        color: var(--primary-color) !important;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        font-size: 0.875rem;
+        font-weight: 500;
+        padding: 0.5rem 0.75rem;
+        border-radius: 9999px;
+    }
+}
+
+/* =====================================================
+     BOUTONS DE NAVIGATION
+     ===================================================== */
+.p-button {
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    transition: all 0.2s ease-in-out;
+
+    &.p-button-outlined {
+        border: 1px solid var(--surface-300);
+        color: var(--text-color);
+        background-color: transparent;
+
+        &:hover:not(:disabled) {
+            background-color: var(--surface-50);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    }
+
+    &.p-button-success {
+        background-color: var(--success-color);
+        border-color: var(--success-color);
+
+        &:hover:not(:disabled) {
+            background-color: #059669;
+            border-color: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+    }
+
+    &[loading] {
+        position: relative;
+        pointer-events: none;
+
+        .pi {
+            animation: spin 1s linear infinite;
+        }
+    }
+}
+
+/* =====================================================
+     DIALOGS
+     ===================================================== */
+.p-dialog {
+    .p-dialog-header {
+        background-color: var(--surface-0);
+        border-bottom: 1px solid var(--surface-200);
+        padding: 1.5rem;
+    }
+
+    .p-dialog-content {
+        padding: 2rem 1.5rem;
+        background-color: var(--surface-0);
+
+        .success-icon {
+            width: 3rem;
+            height: 3rem;
+            background-color: rgba(16, 185, 129, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+
+            .pi {
+                font-size: 1.5rem;
+                color: var(--success-color);
+            }
+        }
+
+        p {
+            text-align: center;
+            color: var(--text-color);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+
+            strong {
+                color: var(--primary-color);
+                font-weight: 600;
+            }
+        }
+    }
+
+    .p-dialog-footer {
+        padding: 1rem 1.5rem;
+        background-color: var(--surface-50);
+        border-top: 1px solid var(--surface-200);
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+}
+
+/* =====================================================
+     TOAST NOTIFICATIONS
+     ===================================================== */
+.p-toast {
+    .p-toast-message {
+        border-radius: 8px;
+        box-shadow:
+            0 4px 6px -1px rgba(0, 0, 0, 0.1),
+            0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+        &.p-toast-message-success {
+            background-color: rgba(16, 185, 129, 0.95);
+            border-left: 4px solid var(--success-color);
+        }
+
+        &.p-toast-message-error {
+            background-color: rgba(239, 68, 68, 0.95);
+            border-left: 4px solid var(--danger-color);
+        }
+
+        &.p-toast-message-warn {
+            background-color: rgba(245, 158, 11, 0.95);
+            border-left: 4px solid var(--warning-color);
+        }
+
+        &.p-toast-message-info {
+            background-color: rgba(6, 182, 212, 0.95);
+            border-left: 4px solid var(--info-color);
+        }
+    }
+}
+
+/* =====================================================
+     UTILITAIRES RESPONSIVES
+     ===================================================== */
+@media (max-width: 768px) {
+    .field-container {
+        margin-bottom: 1rem;
+
+        label {
+            font-size: 0.8rem;
+        }
+    }
+
+    .p-steps {
+        .p-steps-title {
+            font-size: 0.75rem;
+        }
+    }
+
+    .p-panel .p-panel-content {
+        padding: 1rem 0.75rem;
+
+        .grid {
+            gap: 0.75rem;
+
+            p {
+                font-size: 0.85rem;
+            }
+        }
+    }
+
+    .p-button {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.875rem;
+    }
+
+    .p-dialog {
+        margin: 0.5rem;
+        width: calc(100vw - 1rem) !important;
+        max-width: 90vw !important;
+
+        .p-dialog-content {
+            padding: 1.5rem 1rem;
+        }
+    }
+}
+
+@media (max-width: 576px) {
+    .validation-feedback {
+        font-size: 0.8rem;
+    }
+
+    .p-error {
+        font-size: 0.8rem;
+    }
+
+    .p-chip {
+        font-size: 0.8rem !important;
+        padding: 0.4rem 0.6rem !important;
+    }
+}
+
+/* =====================================================
+     AMÉLIORATIONS ACCESSIBILITÉ
+     ===================================================== */
+.p-inputtext:focus,
+.p-dropdown:focus,
+.p-multiselect:focus,
+.p-calendar:focus,
+.p-button:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Focus visible pour navigation clavier */
+.p-button:focus-visible,
+.p-inputtext:focus-visible,
+.p-dropdown:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* =====================================================
+     ANIMATIONS SPÉCIFIQUES
+     ===================================================== */
+.form-step-enter {
+    animation: slideInRight 0.3s ease-in-out;
+}
+
+.form-step-leave {
+    animation: slideOutLeft 0.3s ease-in-out;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutLeft {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+}
+
+/* =====================================================
+     ÉTATS DE CHARGEMENT
+     ===================================================== */
+.loading-overlay {
+    position: relative;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+}
+
+.loading-spinner {
+    width: 2rem;
+    height: 2rem;
+    border: 3px solid var(--surface-200);
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* =====================================================
+     THÈME SOMBRE (SI UTILISÉ)
+     ===================================================== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --surface-0: #1f2937;
+        --surface-50: #374151;
+        --surface-100: #4b5563;
+        --surface-200: #6b7280;
+        --surface-300: #9ca3af;
+        --text-color: #f9fafb;
+        --text-color-secondary: #d1d5db;
+    }
+
+    .validation-feedback.valid-feedback::before {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2310B981'%3e%3cpath fill-rule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clip-rule='evenodd'/%3e%3c/svg%3e");
+    }
+
+    .validation-feedback.invalid-feedback::before {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23EF4444'%3e%3cpath fill-rule='evenodd' d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z' clip-rule='evenodd'/%3e%3c/svg%3e");
+    }
+}

@@ -1,0 +1,400 @@
+<div class="card">
+    <!-- Dialogues et messages -->
+    <p-toast></p-toast>
+    <p-confirmDialog [style]="{ width: '450px' }"></p-confirmDialog>
+
+    <!-- En-tête -->
+    <div class="flex justify-between mb-4">
+        <div class="flex flex-column">
+            <h2 class="text-xl font-bold m-0 p-0">
+                Détails de la Mission
+                @if (mission()) {
+                    <p-tag [value]="mission()?.id || ''" severity="info" class="ml-2"></p-tag>
+                }
+            </h2>
+        </div>
+        <div class="flex gap-2">
+            <button pButton icon="pi pi-arrow-left" label="Retour" class="p-button-outlined" (click)="goBack()"></button>
+
+            <!-- Boutons d'action -->
+            @if (mission() && !editMode()) {
+                <ng-container>
+                    <!-- Bouton d'édition -->
+                    <button pButton icon="pi pi-pencil" label="Modifier" (click)="toggleEditMode()" [disabled]="mission()?.MissionStatus === 'COMPLETED' || mission()?.MissionStatus === 'CANCELLED'"></button>
+
+                    <!-- Bouton d'annulation -->
+                    <button pButton icon="pi pi-times" label="Annuler la mission" class="p-button-danger" (click)="cancelMission()" [disabled]="mission()?.MissionStatus === 'COMPLETED' || mission()?.MissionStatus === 'CANCELLED'"></button>
+                </ng-container>
+            }
+
+            <!-- Boutons en mode édition -->
+            @if (editMode()) {
+                <ng-container>
+                    <button pButton icon="pi pi-save" label="Enregistrer" class="p-button-success" (click)="saveMission()"></button>
+                    <button pButton icon="pi pi-times" label="Annuler" class="p-button-outlined p-button-secondary" (click)="toggleEditMode()"></button>
+                </ng-container>
+            }
+        </div>
+    </div>
+
+    <!-- Indicateur de chargement -->
+    @if (loading()) {
+        <div class="flex justify-content-center">
+            <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+        </div>
+    }
+
+    <!-- Contenu principal -->
+    @if (!loading() && mission()) {
+        <div>
+            <!-- Statut et priorité -->
+            <div class="flex justify-content-between mb-4">
+                <div>
+                    <span class="font-semibold mr-2">Statut:</span>
+                    <p-tag [value]="getStatusName(mission()!.MissionStatus)" [severity]="getStatusSeverity(mission()!.MissionStatus)"></p-tag>
+                </div>
+                <div>
+                    <span class="font-semibold mr-2">Priorité:</span>
+                    <p-tag [value]="mission()!.missionPriority" [severity]="getPrioritySeverity(mission()!.missionPriority)"></p-tag>
+                </div>
+                <div>
+                    <span class="font-semibold mr-2">Fournisseur:</span>
+                    <p-tag [value]="mission()!.providerReference" [severity]="'info'"></p-tag>
+                </div>
+            </div>
+
+            <!-- Onglets -->
+            <p-tabView [(activeIndex)]="activeTabIndex">
+                <!-- Onglet Informations -->
+                <p-tabPanel header="Informations" [leftIcon]="'pi pi-info-circle mr-2'">
+                    <div [ngClass]="{ hidden: editMode() }">
+                        <div class="grid flex-wrap gap-4">
+                            <div class="col-12 md:col-6">
+                                <p-card header="Informations du Demandeur">
+                                    <div class="mb-3">
+                                        <span class="font-semibold block">Nom:</span>
+                                        <span>{{ mission()!.requesterName }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="font-semibold block">Téléphone:</span>
+                                        <span>{{ mission()!.requesterPhone || 'Non spécifié' }}</span>
+                                    </div>
+                                </p-card>
+                            </div>
+                            <div class="col-12 md:col-6">
+                                <p-card header="Informations du Véhicule">
+                                    <div class="mb-3">
+                                        <span class="font-semibold block">Marque:</span>
+                                        <span>{{ mission()!.vehicleMake }}</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <span class="font-semibold block">Modèle:</span>
+                                        <span>{{ mission()!.vehicleModel || 'Non spécifié' }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="font-semibold block">Immatriculation:</span>
+                                        <span>{{ mission()!.vehiclePlate }}</span>
+                                    </div>
+                                </p-card>
+                            </div>
+                            <div class="col-12 md:col-6">
+                                <p-card header="Adresse de Prise en Charge">
+                                    <div>{{ mission()!.pickupAddress }}</div>
+                                    <!-- Ici, vous pourriez ajouter une carte si nécessaire -->
+                                </p-card>
+                            </div>
+                            <div class="col-12 md:col-6">
+                                <p-card header="Adresse de Destination">
+                                    <div>{{ mission()!.destinationAddress }}</div>
+                                    <!-- Ici, vous pourriez ajouter une carte si nécessaire -->
+                                </p-card>
+                            </div>
+                            <div class="col-12">
+                                <p-card header="Types de mission">
+                                    <div class="flex flex-wrap gap-2">
+                                        @for (type of mission()!.missionType; track type.name) {
+                                            <p-tag [value]="type.description" [severity]="getTypeSeverity(type.name)" class="mr-2 mb-2"></p-tag>
+                                        }
+                                    </div>
+                                </p-card>
+                            </div>
+                            <div class="col-12">
+                                <p-card header="Notes">
+                                    <div>{{ mission()!.notes || 'Aucune note' }}</div>
+                                </p-card>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulaire d'édition -->
+                    @if (editMode()) {
+                        <form [formGroup]="missionForm" class="grid flex-wrap gap-4">
+                            <div class="col-12 md:col-6">
+                                <p-card header="Informations du Demandeur">
+                                    <div class="field mb-3">
+                                        <label for="requesterName" class="font-semibold block mb-2">Nom*</label>
+                                        <input
+                                            id="requesterName"
+                                            type="text"
+                                            pInputText
+                                            formControlName="requesterName"
+                                            class="w-full"
+                                            [ngClass]="{
+                                                'ng-invalid ng-dirty': isFieldInvalid('requesterName'),
+                                                'ng-valid ng-dirty': isFieldValid('requesterName')
+                                            }"
+                                        />
+                                        @if (isFieldValid('requesterName')) {
+                                            <i class="pi pi-check validation-icon success"></i>
+                                        }
+                                        @if (isFieldInvalid('requesterName')) {
+                                            <i class="pi pi-times validation-icon error"></i>
+                                        }
+                                    </div>
+                                    <div class="field">
+                                        <label for="requesterPhone" class="font-semibold block mb-2">Téléphone</label>
+                                        <input
+                                            id="requesterPhone"
+                                            type="text"
+                                            pInputText
+                                            formControlName="requesterPhone"
+                                            class="w-full"
+                                            [ngClass]="{
+                                                'ng-invalid ng-dirty': isFieldInvalid('requesterPhone'),
+                                                'ng-valid ng-dirty': isFieldValid('requesterPhone')
+                                            }"
+                                        />
+                                        @if (isFieldInvalid('requesterPhone')) {
+                                            <span>{{ getFieldError('requesterPhone') }}</span>
+                                        }
+                                        @if (isFieldValid('requesterPhone')) {
+                                            <span>Téléphone valide</span>
+                                        }
+                                    </div>
+                                </p-card>
+                            </div>
+                            <div class="col-12 md:col-6">
+                                <p-card header="Informations du Véhicule">
+                                    <div class="field mb-3">
+                                        <label for="vehicleMake" class="font-semibold block mb-2">Marque*</label>
+                                        <input
+                                            id="vehicleMake"
+                                            type="text"
+                                            pInputText
+                                            formControlName="vehicleMake"
+                                            class="w-full"
+                                            [ngClass]="{
+                                                'ng-invalid ng-dirty': isFieldInvalid('vehicleMake'),
+                                                'ng-valid ng-dirty': isFieldValid('vehicleMake')
+                                            }"
+                                        />
+                                        @if (isFieldValid('vehicleMake')) {
+                                            <i class="pi pi-check validation-icon success"></i>
+                                        }
+                                        @if (isFieldInvalid('vehicleMake')) {
+                                            <i class="pi pi-times validation-icon error"></i>
+                                        }
+                                    </div>
+                                    <div class="field mb-3">
+                                        <label for="vehicleModel" class="font-semibold block mb-2">Modèle</label>
+                                        <input
+                                            id="vehicleModel"
+                                            type="text"
+                                            pInputText
+                                            formControlName="vehicleModel"
+                                            class="w-full"
+                                            [ngClass]="{
+                                                'ng-invalid ng-dirty': isFieldInvalid('vehicleModel'),
+                                                'ng-valid ng-dirty': isFieldValid('vehicleModel')
+                                            }"
+                                        />
+                                        @if (isFieldValid('vehicleModel')) {
+                                            <i class="pi pi-check validation-icon success"></i>
+                                        }
+                                        @if (isFieldInvalid('vehicleModel')) {
+                                            <i class="pi pi-times validation-icon error"></i>
+                                        }
+                                    </div>
+                                    <div class="field">
+                                        <label for="vehiclePlate" class="font-semibold block mb-2">Immatriculation*</label>
+                                        <input
+                                            id="vehiclePlate"
+                                            type="text"
+                                            pInputText
+                                            formControlName="vehiclePlate"
+                                            class="w-full"
+                                            [ngClass]="{
+                                                'ng-invalid ng-dirty': isFieldInvalid('vehiclePlate'),
+                                                'ng-valid ng-dirty': isFieldValid('vehiclePlate')
+                                            }"
+                                        />
+                                        @if (isFieldValid('vehiclePlate')) {
+                                            <i class="pi pi-check validation-icon success"></i>
+                                        }
+                                        @if (isFieldInvalid('vehiclePlate')) {
+                                            <i class="pi pi-times validation-icon error"></i>
+                                        }
+                                    </div>
+                                </p-card>
+                            </div>
+                            <div class="col-12 md:col-6">
+                                <p-card header="Adresse de Prise en Charge">
+                                    <div class="field">
+                                        <label for="pickupAddress" class="font-semibold block mb-2">Adresse*</label>
+                                        <textarea
+                                            id="pickupAddress"
+                                            pInputTextarea
+                                            formControlName="pickupAddress"
+                                            [rows]="4"
+                                            class="w-full"
+                                            maxlength="255"
+                                            [ngClass]="{
+                                                'ng-invalid ng-dirty': isFieldInvalid('pickupAddress'),
+                                                'ng-valid ng-dirty': isFieldValid('pickupAddress')
+                                            }"
+                                        ></textarea>
+                                        @if (isFieldValid('pickupAddress')) {
+                                            <i class="pi pi-check validation-icon success"></i>
+                                        }
+                                        @if (isFieldInvalid('pickupAddress')) {
+                                            <i class="pi pi-times validation-icon error"></i>
+                                        }
+                                    </div>
+                                </p-card>
+                            </div>
+                            <div class="col-12 md:col-6">
+                                <p-card header="Adresse de Destination">
+                                    <div class="field">
+                                        <label for="destinationAddress" class="font-semibold block mb-2">Adresse*</label>
+                                        <textarea
+                                            id="destinationAddress"
+                                            pInputTextarea
+                                            formControlName="destinationAddress"
+                                            [rows]="4"
+                                            class="w-full"
+                                            maxlength="255"
+                                            [ngClass]="{
+                                                'ng-invalid ng-dirty': isFieldInvalid('destinationAddress'),
+                                                'ng-valid ng-dirty': isFieldValid('destinationAddress')
+                                            }"
+                                        ></textarea>
+                                        @if (isFieldValid('destinationAddress')) {
+                                            <i class="pi pi-check validation-icon success"></i>
+                                        }
+                                        @if (isFieldInvalid('destinationAddress')) {
+                                            <i class="pi pi-times validation-icon error"></i>
+                                        }
+                                    </div>
+                                </p-card>
+                            </div>
+                            <div class="col-12">
+                                <p-card header="Options de mission">
+                                    <div class="field mb-3">
+                                        <label for="missionPriority" class="font-semibold block mb-2">Priorité</label>
+                                        <p-dropdown id="missionPriority" [options]="missionPriorityOptions" formControlName="missionPriority" optionLabel="name" optionValue="code" class="w-full"> </p-dropdown>
+                                    </div>
+                                    <div class="field">
+                                        <label for="missionTypeIds" class="font-semibold block mb-2">Types de mission</label>
+                                        <p-multiSelect
+                                            id="missionTypeIds"
+                                            [options]="missionTypeOptions"
+                                            formControlName="missionTypeIds"
+                                            optionLabel="name"
+                                            optionValue="code"
+                                            display="chip"
+                                            class="w-full"
+                                            [ngClass]="{
+                                                'ng-invalid ng-dirty': isFieldInvalid('missionTypeIds'),
+                                                'ng-valid ng-dirty': isFieldValid('missionTypeIds')
+                                            }"
+                                        >
+                                        </p-multiSelect>
+                                        @if (isFieldValid('missionTypeIds')) {
+                                            <i class="pi pi-check validation-icon success"></i>
+                                        }
+                                        @if (isFieldInvalid('missionTypeIds')) {
+                                            <i class="pi pi-times validation-icon error"></i>
+                                        }
+                                    </div>
+                                </p-card>
+                            </div>
+                            <div class="col-12">
+                                <p-card header="Notes">
+                                    <div class="field">
+                                        <textarea
+                                            id="notes"
+                                            pInputTextarea
+                                            formControlName="notes"
+                                            [rows]="4"
+                                            maxlength="255"
+                                            class="w-full"
+                                            [ngClass]="{
+                                                'ng-invalid ng-dirty': isFieldInvalid('notes'),
+                                                'ng-valid ng-dirty': isFieldValid('notes')
+                                            }"
+                                        ></textarea>
+                                        @if (isFieldValid('notes')) {
+                                            <i class="pi pi-check validation-icon success"></i>
+                                        }
+                                        @if (isFieldInvalid('notes')) {
+                                            <i class="pi pi-times validation-icon error"></i>
+                                        }
+                                    </div>
+                                </p-card>
+                            </div>
+                        </form>
+                    }
+                </p-tabPanel>
+
+                <!-- Onglet Photos -->
+
+                <!-- Onglet Historique -->
+
+                <!-- Onglet Chauffeur -->
+
+                <!-- Onglet Signatures -->
+            </p-tabView>
+
+            <!-- Actions de changement de statut -->
+            @if (!editMode() && mission() && mission()!.MissionStatus !== 'COMPLETED' && mission()!.MissionStatus !== 'CANCELLED') {
+                <div class="mt-4">
+                    <p-divider></p-divider>
+                    <h3>Changement de statut</h3>
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        <!-- Boutons de changement de statut selon l'état actuel -->
+                        @switch (mission()!.MissionStatus) {
+                            @case ('CREATED') {
+                                <button pButton label="Assigner" icon="pi pi-user" class="p-button-info" (click)="updateStatus('ASSIGNED')"></button>
+                            }
+                            @case ('ASSIGNED') {
+                                <button pButton label="Marquer comme accepté" icon="pi pi-check" class="p-button-success" (click)="updateStatus('ACCEPTED')"></button>
+                                <button pButton label="Marquer comme refusé" icon="pi pi-times" class="p-button-danger" (click)="updateStatus('REJECTED')"></button>
+                            }
+                            @case ('ACCEPTED') {
+                                <button pButton label="En route" icon="pi pi-car" class="p-button-info" (click)="updateStatus('IN_ROUTE')"></button>
+                            }
+                            @case ('IN_ROUTE') {
+                                <button pButton label="Arrivé sur site" icon="pi pi-map-marker" class="p-button-info" (click)="updateStatus('ARRIVED')"></button>
+                            }
+                            @case ('ARRIVED') {
+                                <button pButton label="Chargement" icon="pi pi-truck" class="p-button-info" (click)="updateStatus('LOADING')"></button>
+                            }
+
+                            @case ('TOWING') {
+                                <button pButton label="En transit" icon="pi pi-directions" class="p-button-info" (click)="updateStatus('IN_TRANSIT')"></button>
+                            }
+
+                            @case ('IN_TRANSIT') {
+                                <button pButton label="Livré" icon="pi pi-flag" class="p-button-info" (click)="updateStatus('DELIVERED')"></button>
+                            }
+
+                            @case ('DELIVERED') {
+                                <button pButton label="Terminé" icon="pi pi-check-circle" class="p-button-success" (click)="updateStatus('COMPLETED')"></button>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

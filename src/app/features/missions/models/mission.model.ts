@@ -1,6 +1,9 @@
 export interface MissionResponse {
     id: string;
-    missionType: MissionType;
+    providerReference: string;
+    providerName: string;
+    providerType: ProviderTypeEnum;
+    missionType: MissionType[];
     MissionStatus: MissionStatusEnum;
     requesterName: string;
     requesterPhone: string;
@@ -14,8 +17,45 @@ export interface MissionResponse {
     destinationAddress: string;
     destinationLatitude: number;
     destinationLongitude: number;
+    receivedAt: string;
+    createdAt: string;
+    updatedAt: string;
     notes: string;
     missionStatusHistory: MissionStatusHistory[];
+}
+
+export interface MissionUpdateRequest {
+    missionType: MissionTypeEnum[];
+    MissionStatus?: MissionStatusEnum;
+    requesterName: string;
+    requesterPhone: string;
+    vehicleMake: string;
+    vehicleModel: string;
+    vehiclePlate: string;
+    pickupAddress: string;
+    destinationAddress: string;
+    missionPriority: MissionPriorityEnum;
+    notes: string;
+}
+
+export interface MissionRequest {
+    providerReference: string;
+    providerId: number;
+    missionType: MissionTypeName[];
+    requesterName: string;
+    requesterPhone: string;
+    receivedAt: string;
+    priority: MissionPriorityEnum;
+    vehicleMake: string;
+    vehicleModel: string;
+    vehiclePlate: string;
+    pickupAddress: string;
+    destinationAddress: string;
+    notes: string;
+    pickupLatitude: number;
+    pickupLongitude: number;
+    destinationLatitude: number;
+    destinationLongitude: number;
 }
 
 export interface MissionStatusFormatted {
@@ -32,9 +72,9 @@ export interface MissionTypeFormatted {
     code: MissionTypeEnum;
 }
 
-interface MissionType {
-    name: MissionTypeEnum;
-    description: string;
+export interface ProviderTypeFormatted {
+    name: string;
+    code: ProviderTypeEnum;
 }
 
 export type MissionStatusEnum = 'CREATED' | 'PRE_ASSIGNED' | 'ASSIGNED' | 'ACCEPTED' | 'IN_ROUTE' | 'ARRIVED' | 'TOWING' | 'IN_TRANSIT' | 'DELIVERED' | 'CANCELLED' | 'COMPLETED';
@@ -42,6 +82,16 @@ export type MissionStatusEnum = 'CREATED' | 'PRE_ASSIGNED' | 'ASSIGNED' | 'ACCEP
 export type MissionPriorityEnum = 'NORMAL' | 'HIGH' | 'URGENT';
 
 export type MissionTypeEnum = 'TOWING' | 'TRANSPORT' | 'REPAIR' | 'ASSISTANCE' | 'TIRE' | 'OTHER';
+
+export type ProviderTypeEnum = 'INTERNATIONAL' | 'NATIONAL' | 'PRIVATE';
+
+interface MissionTypeName {
+    name: MissionTypeEnum;
+}
+interface MissionType {
+    name: MissionTypeEnum;
+    description: string;
+}
 
 interface MissionType {
     name: MissionTypeEnum;

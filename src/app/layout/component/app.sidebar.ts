@@ -5,7 +5,6 @@ import { RouterModule } from '@angular/router';
 import { MenuModule } from 'primeng/menu';
 import { CommonModule } from '@angular/common';
 import { AppMenu } from './app.menu';
-
 @Component({
     selector: 'app-sidebar',
     standalone: true,
@@ -84,7 +83,33 @@ export class AppSidebar {
                         {
                             label: 'Gestion des missions',
                             icon: 'pi pi-car',
-                            routerLink: '/operator/missions'
+                            items: [
+                                {
+                                    label: 'Mes missions',
+                                    icon: 'pi pi-fw pi-car',
+                                    routerLink: '/operator/missions'
+                                },
+                                {
+                                    label: 'Créer une mission',
+                                    icon: 'pi pi-fw pi-plus',
+                                    routerLink: '/operator/missions/create'
+                                },
+                                {
+                                    label: 'Missions en cours',
+                                    icon: 'pi pi-fw pi-clock',
+                                    routerLink: '/operator/missions/in-progress'
+                                },
+                                {
+                                    label: 'Fiche affectation mission',
+                                    icon: 'pi pi-fw pi-file',
+                                    routerLink: '/operator/missions/assignment-sheet'
+                                },
+                                {
+                                    label: 'Historique',
+                                    icon: 'pi pi-fw pi-history',
+                                    routerLink: '/operator/missions/history'
+                                }
+                            ]
                         },
                         {
                             label: 'Chauffeurs',

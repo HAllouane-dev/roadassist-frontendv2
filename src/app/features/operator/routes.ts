@@ -15,5 +15,15 @@ export const OPERATOR_ROUTES: Routes = [
         path: 'missions',
         loadComponent: () => import('./pages/operator-missions/operator-missions.component').then((m) => m.OperatorMissionsComponent),
         title: 'Missions opérateur - RoadAssist Pro'
+    },
+    {
+        path: 'missions/create',
+        loadComponent: () => import('./pages/create-mission/create-mission.component').then((m) => m.CreateMissionComponent),
+        title: 'Créer une mission - RoadAssist Pro'
+    },
+    {
+        path: 'missions/:id',
+        loadComponent: () => import('./pages/operator-mission-details/operator-mission-details.component').then((m) => m.OperatorMissionDetailsComponent),
+        title: 'Détails de la mission - RoadAssist Pro'
     }
 ];

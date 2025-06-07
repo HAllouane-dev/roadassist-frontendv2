@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { MissionDataGridComponent } from '../../../missions/components/mission-list/mission-list.component';
+import { GrafanaDashboardComponent } from '../../../../shared/components/grafana-dashboard/grafana-dashboard.component';
 
 @Component({
     selector: 'app-operator-dashboard',
     standalone: true,
-    imports: [MissionDataGridComponent],
-    template: ` <app-mission-list></app-mission-list>`
+    template: ` <app-grafana-dashboard></app-grafana-dashboard> `,
+    imports: [GrafanaDashboardComponent]
 })
 export class OperatorDashboardComponent {}

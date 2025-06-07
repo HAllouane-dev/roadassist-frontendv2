@@ -1,0 +1,828 @@
+<!-- Template HTML complet pour le formulaire de création de mission avec PrimeNG -->
+<p-toast position="top-center"></p-toast>
+
+<p-card styleClass="p-4 mission-form-container">
+    <div class="text-center mb-5">
+        <div class="text-2xl font-bold text-blue-800 mb-2">Création d'une mission d'assistance</div>
+        <div class="text-gray-500">Veuillez remplir tous les champs obligatoires (*) pour créer une nouvelle mission</div>
+    </div>
+
+    <!-- Barre de progression -->
+    <div class="mb-4">
+        <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-medium text-blue-700">Progression: {{ getCurrentStepCompletionPercentage() }}%</span>
+            <div class="flex gap-2">
+                <button pButton icon="pi pi-save" label="Sauvegarder brouillon" class="p-button-text p-button-sm" (click)="saveDraft()"></button>
+                @if (hasDraft()) {
+                    <button pButton icon="pi pi-folder-open" label="Charger brouillon" class="p-button-text p-button-sm" (click)="loadDraft()"></button>
+                }
+            </div>
+        </div>
+        <p-progressBar [value]="getCurrentStepCompletionPercentage()" [style]="{ height: '6px' }" [showValue]="false"></p-progressBar>
+    </div>
+
+    <!-- Étapes de navigation -->
+    <div class="mb-6">
+        <p-steps [model]="steps" [activeIndex]="activeIndex" [readonly]="false" (activeIndexChange)="onActiveIndexChange($event)"></p-steps>
+    </div>
+
+    <!-- Conteneur du formulaire -->
+    <div class="p-4 border-1 border-gray-200 rounded-lg">
+        <form [formGroup]="missionForm" (ngSubmit)="onSubmit()">
+            <!-- Étape 1: Informations du requérant -->
+            @if (activeIndex === 0) {
+                <div class="flex flex-col gap-4 form-step-enter">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="pi pi-user mr-2"></i>
+                        Informations du requérant
+                    </h3>
+
+                    <div class="field-container">
+                        <label for="requesterName" class="required">Nom du requérant</label>
+                        <span class="p-input-icon-right w-full">
+                            <input
+                                pInputText
+                                id="requesterName"
+                                formControlName="requesterName"
+                                [ngClass]="{
+                                    'ng-invalid ng-dirty': isFieldInvalid('requesterName'),
+                                    'ng-valid ng-dirty': isFieldValid('requesterName')
+                                }"
+                                placeholder="Ex: Jean Dupont"
+                                class="w-full"
+                            />
+
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Nom complet de la personne demandant l'assistance" tooltipPosition="top"></i>
+                            @if (isFieldValid('requesterName')) {
+                                <i class="pi pi-check validation-icon success"></i>
+                            }
+                            @if (isFieldInvalid('requesterName')) {
+                                <i class="pi pi-times validation-icon error"></i>
+                            }
+                        </span>
+
+                        <div
+                            class="validation-feedback"
+                            [ngClass]="{
+                                'valid-feedback': isFieldValid('requesterName'),
+                                'invalid-feedback': isFieldInvalid('requesterName')
+                            }"
+                        >
+                            @if (isFieldInvalid('requesterName')) {
+                                <span>{{ getFieldError('requesterName') }}</span>
+                            }
+                            @if (isFieldValid('requesterName')) {
+                                <span>Nom du requérant valide</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="field-container">
+                        <label for="requesterPhone" class="required">Numéro de téléphone</label>
+                        <span class="p-input-icon-right w-full">
+                            <input
+                                pInputText
+                                id="requesterPhone"
+                                formControlName="requesterPhone"
+                                [ngClass]="{
+                                    'ng-invalid ng-dirty': isFieldInvalid('requesterPhone'),
+                                    'ng-valid ng-dirty': isFieldValid('requesterPhone')
+                                }"
+                                placeholder="Ex: +33 6 12 34 56 78"
+                                class="w-full"
+                            />
+
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Numéro de téléphone pour contacter le requérant" tooltipPosition="top"></i>
+                            @if (isFieldValid('requesterPhone')) {
+                                <i class="pi pi-check validation-icon success"></i>
+                            }
+                            @if (isFieldInvalid('requesterPhone')) {
+                                <i class="pi pi-times validation-icon error"></i>
+                            }
+                        </span>
+
+                        <div
+                            class="validation-feedback"
+                            [ngClass]="{
+                                'valid-feedback': isFieldValid('requesterPhone'),
+                                'invalid-feedback': isFieldInvalid('requesterPhone')
+                            }"
+                        >
+                            @if (isFieldInvalid('requesterPhone')) {
+                                <span>{{ getFieldError('requesterPhone') }}</span>
+                            }
+                            @if (isFieldValid('requesterPhone')) {
+                                <span>{{ missionValidationService.formatPhoneDisplay(missionForm.get('requesterPhone')?.value) }}</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="field-container">
+                        <label for="receivedAt" class="required">Date et heure de réception</label><br />
+                        <span class="p-input-icon-right w-full">
+                            <p-calendar
+                                id="receivedAt"
+                                formControlName="receivedAt"
+                                [showTime]="true"
+                                [hourFormat]="'24'"
+                                [showIcon]="true"
+                                [ngClass]="{ 'ng-invalid ng-dirty': submitted && f['receivedAt'].errors }"
+                                dateFormat="dd/mm/yy"
+                                placeholder="Sélectionner date et heure"
+                                class="w-full"
+                            ></p-calendar> </span
+                        ><br />
+
+                        <i class="pi pi-info-circle text-blue-500" pTooltip="Moment où la demande d'assistance a été reçue" tooltipPosition="top"></i>
+                        @if (submitted && f['receivedAt'].errors?.['required']) {
+                            <div class="validation-feedback invalid-feedback">
+                                <span>La date et l'heure sont obligatoires</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Étape 2: Détails du fournisseur -->
+            @if (activeIndex === 1) {
+                <div class="flex flex-col gap-4 form-step-enter">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="pi pi-building mr-2"></i>
+                        Détails du fournisseur
+                    </h3>
+
+                    <div class="field-container">
+                        <label for="providerReference" class="required">Référence fournisseur</label>
+                        <span class="p-input-icon-right w-full">
+                            <input
+                                pInputText
+                                id="providerReference"
+                                formControlName="providerReference"
+                                [ngClass]="{
+                                    'ng-invalid ng-dirty': isFieldInvalid('providerReference'),
+                                    'ng-valid ng-dirty': isFieldValid('providerReference')
+                                }"
+                                placeholder="Ex: PRV-20250401-001"
+                                class="w-full"
+                            />
+
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Référence fournisseur au format PRV-YYYYMMDD-XXX" tooltipPosition="top"></i>
+
+                            @if (isFieldValid('providerReference')) {
+                                <i class="pi pi-check validation-icon success"></i>
+                            }
+                            @if (isFieldInvalid('providerReference')) {
+                                <i class="pi pi-times validation-icon error"></i>
+                            }
+                        </span>
+
+                        <div
+                            class="validation-feedback"
+                            [ngClass]="{
+                                'valid-feedback': isFieldValid('providerReference'),
+                                'invalid-feedback': isFieldInvalid('providerReference')
+                            }"
+                        >
+                            @if (isFieldInvalid('providerReference')) {
+                                <span>{{ getFieldError('providerReference') }}</span>
+                            }
+                            @if (isFieldValid('providerReference')) {
+                                <span>Référence fournisseur valide</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="field-container">
+                        <label for="fournisseur" class="required">Fournisseur</label>
+                        <span class="p-input-icon-right w-full">
+                            <p-dropdown
+                                id="fournisseur"
+                                formControlName="fournisseur"
+                                [options]="providerOptions"
+                                optionLabel="name"
+                                optionValue="id"
+                                placeholder="Sélectionner le fournisseur"
+                                [ngClass]="{
+                                    'ng-invalid ng-dirty': submitted && f['fournisseur'].errors,
+                                    'ng-valid ng-dirty': !f['fournisseur'].errors && f['fournisseur'].value && f['fournisseur'].dirty
+                                }"
+                                [filter]="true"
+                                filterBy="name"
+                                [showClear]="true"
+                                styleClass="w-full"
+                            ></p-dropdown>
+
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Fournisseur de l'intervention" tooltipPosition="top"></i>
+                        </span>
+
+                        @if (submitted && f['fournisseur'].errors?.['required']) {
+                            <div class="validation-feedback invalid-feedback">
+                                <span>Le fournisseur est obligatoire</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Étape 3: Détails du véhicule -->
+            @if (activeIndex === 2) {
+                <div class="flex flex-col gap-4 form-step-enter">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="pi pi-car mr-2"></i>
+                        Détails du véhicule
+                    </h3>
+
+                    <div class="field-container">
+                        <label for="vehicleMake" class="required">Marque du véhicule</label>
+                        <span class="p-input-icon-right w-full">
+                            <input
+                                pInputText
+                                id="vehicleMake"
+                                formControlName="vehicleMake"
+                                [ngClass]="{
+                                    'ng-invalid ng-dirty': isFieldInvalid('vehicleMake'),
+                                    'ng-valid ng-dirty': isFieldValid('vehicleMake')
+                                }"
+                                placeholder="Ex: Renault"
+                                class="w-full"
+                            />
+
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Marque du véhicule à dépanner" tooltipPosition="top"></i>
+
+                            @if (isFieldValid('vehicleMake')) {
+                                <i class="pi pi-check validation-icon success"></i>
+                            }
+                            @if (isFieldInvalid('vehicleMake')) {
+                                <i class="pi pi-times validation-icon error"></i>
+                            }
+                        </span>
+
+                        <div
+                            class="validation-feedback"
+                            [ngClass]="{
+                                'valid-feedback': isFieldValid('vehicleMake'),
+                                'invalid-feedback': isFieldInvalid('vehicleMake')
+                            }"
+                        >
+                            @if (isFieldInvalid('vehicleMake')) {
+                                <span>{{ getFieldError('vehicleMake') }}</span>
+                            }
+                            @if (isFieldValid('vehicleMake')) {
+                                <span>Marque du véhicule valide</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="field-container">
+                        <label for="vehicleModel">Modèle du véhicule</label>
+                        <span class="p-input-icon-right w-full">
+                            <input pInputText id="vehicleModel" formControlName="vehicleModel" placeholder="Ex: Clio" class="w-full" />
+
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Modèle spécifique du véhicule (optionnel)" tooltipPosition="top"></i>
+                        </span>
+                    </div>
+
+                    <div class="field-container">
+                        <label for="vehiclePlate" class="required">Plaque d'immatriculation</label>
+                        <span class="p-input-icon-right w-full">
+                            <input
+                                pInputText
+                                id="vehiclePlate"
+                                formControlName="vehiclePlate"
+                                [ngClass]="{
+                                    'ng-invalid ng-dirty': isFieldInvalid('vehiclePlate'),
+                                    'ng-valid ng-dirty': isFieldValid('vehiclePlate')
+                                }"
+                                placeholder="Ex: AB-123-CD"
+                                class="w-full"
+                                style="text-transform: uppercase"
+                            />
+
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Numéro d'immatriculation du véhicule" tooltipPosition="top"></i>
+
+                            @if (isFieldValid('vehiclePlate')) {
+                                <i class="pi pi-check validation-icon success"></i>
+                            }
+                            @if (isFieldInvalid('vehiclePlate')) {
+                                <i class="pi pi-times validation-icon error"></i>
+                            }
+                        </span>
+
+                        <div
+                            class="validation-feedback"
+                            [ngClass]="{
+                                'valid-feedback': isFieldValid('vehiclePlate'),
+                                'invalid-feedback': isFieldInvalid('vehiclePlate')
+                            }"
+                        >
+                            @if (isFieldInvalid('vehiclePlate')) {
+                                <span>{{ getFieldError('vehiclePlate') }}</span>
+                            }
+                            @if (isFieldValid('vehiclePlate')) {
+                                <span>{{ missionValidationService.formatVehiclePlate(missionForm.get('vehiclePlate')?.value) }}</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Étape 4: Localisation -->
+            @if (activeIndex === 3) {
+                <div class="flex flex-col gap-4 form-step-enter">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="pi pi-map-marker mr-2"></i>
+                        Localisation
+                    </h3>
+
+                    <div class="field-container">
+                        <label for="pickupAddress" class="required">Adresse de récupération</label>
+                        <span class="p-input-icon-right w-full">
+                            <textarea
+                                pInputTextarea
+                                id="pickupAddress"
+                                formControlName="pickupAddress"
+                                [rows]="3"
+                                [ngClass]="{
+                                    'ng-invalid ng-dirty': isFieldInvalid('pickupAddress'),
+                                    'ng-valid ng-dirty': isFieldValid('pickupAddress')
+                                }"
+                                placeholder="Ex: 1 Place de l'Hôtel de Ville, 75004 Paris"
+                                class="w-full"
+                            ></textarea>
+
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Adresse où se trouve actuellement le véhicule" tooltipPosition="top"></i>
+                        </span>
+
+                        <div
+                            class="validation-feedback"
+                            [ngClass]="{
+                                'valid-feedback': isFieldValid('pickupAddress'),
+                                'invalid-feedback': isFieldInvalid('pickupAddress')
+                            }"
+                        >
+                            @if (isFieldInvalid('pickupAddress')) {
+                                <span>{{ getFieldError('pickupAddress') }}</span>
+                            }
+                            @if (isFieldValid('pickupAddress')) {
+                                <span>Adresse de récupération valide</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="field-container">
+                        <label for="destinationAddress" class="required">Adresse de destination</label>
+                        <span class="p-input-icon-right w-full">
+                            <textarea
+                                pInputTextarea
+                                id="destinationAddress"
+                                formControlName="destinationAddress"
+                                [rows]="3"
+                                [ngClass]="{
+                                    'ng-invalid ng-dirty': isFieldInvalid('destinationAddress'),
+                                    'ng-valid ng-dirty': isFieldValid('destinationAddress')
+                                }"
+                                placeholder="Ex: 16 Avenue de Clichy, 75017 Paris"
+                                class="w-full"
+                            ></textarea>
+
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Adresse où le véhicule doit être déposé" tooltipPosition="top"></i>
+                        </span>
+
+                        <div
+                            class="validation-feedback"
+                            [ngClass]="{
+                                'valid-feedback': isFieldValid('destinationAddress'),
+                                'invalid-feedback': isFieldInvalid('destinationAddress')
+                            }"
+                        >
+                            @if (isFieldInvalid('destinationAddress')) {
+                                <span>{{ getFieldError('destinationAddress') }}</span>
+                            }
+                            @if (isFieldValid('destinationAddress')) {
+                                <span>Adresse de destination valide</span>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Information sur la distance estimée -->
+                    @if (isFieldValid('pickupAddress') && isFieldValid('destinationAddress')) {
+                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="pi pi-info-circle text-blue-500 mr-2"></i>
+                                <span class="text-blue-700"> Les adresses ont été validées. La géolocalisation sera effectuée lors de la sauvegarde. </span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- Étape 5: Détails de la mission -->
+            @if (activeIndex === 4) {
+                <div class="flex flex-col gap-4 form-step-enter">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="pi pi-cog mr-2"></i>
+                        Détails de la mission
+                    </h3>
+
+                    <div class="field-container">
+                        <label for="missionType" class="required">Type de mission</label>
+                        <span class="p-input-icon-right w-full">
+                            <p-multiSelect
+                                id="missionTypes"
+                                [options]="missionTypes"
+                                formControlName="missionTypes"
+                                optionLabel="name"
+                                optionValue="code"
+                                [placeholder]="'Sélectionner un ou plusieurs types'"
+                                [ngClass]="{
+                                    'ng-invalid ng-dirty': isFieldInvalid('missionTypes'),
+                                    'ng-valid ng-dirty': isFieldValid('missionTypes')
+                                }"
+                                styleClass="w-full"
+                                [showToggleAll]="true"
+                                [filter]="true"
+                                [maxSelectedLabels]="3"
+                                [selectedItemsLabel]="'{0} types sélectionnés'"
+                                [showClear]="true"
+                            ></p-multiSelect>
+
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Nature de l'intervention à réaliser" tooltipPosition="top"></i>
+                        </span>
+
+                        <div
+                            class="validation-feedback"
+                            [ngClass]="{
+                                'valid-feedback': isFieldValid('missionTypes'),
+                                'invalid-feedback': isFieldInvalid('missionTypes')
+                            }"
+                        >
+                            @if (isFieldInvalid('missionTypes')) {
+                                <span>{{ getFieldError('missionTypes') }}</span>
+                            }
+                            @if (isFieldValid('missionTypes')) {
+                                <span>{{ f['missionTypes'].value?.length }} type(s) de mission sélectionné(s)</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="field-container">
+                        <label for="priority">Priorité</label>
+                        <span class="p-input-icon-right w-full">
+                            <p-dropdown id="priority" formControlName="priority" [options]="priorityOptions" optionLabel="name" optionValue="code" placeholder="Sélectionner la priorité" styleClass="w-full" [showClear]="false"></p-dropdown>
+
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Niveau d'urgence de l'intervention" tooltipPosition="top"></i>
+                        </span>
+                    </div>
+
+                    <div class="field-container">
+                        <label for="notes">Notes complémentaires</label>
+                        <span class="p-input-icon-right w-full">
+                            <textarea
+                                pInputTextarea
+                                id="notes"
+                                formControlName="notes"
+                                [rows]="4"
+                                [ngClass]="{
+                                    'ng-invalid ng-dirty': isFieldInvalid('notes')
+                                }"
+                                placeholder="Précisions sur la panne, état du véhicule, conditions particulières..."
+                                class="w-full"
+                                maxlength="255"
+                            ></textarea>
+
+                            <i class="pi pi-info-circle text-blue-500" pTooltip="Informations complémentaires importantes pour l'intervention" tooltipPosition="top"></i>
+                        </span>
+
+                        <!-- Compteur de caractères -->
+                        <div class="flex justify-between items-center mt-1">
+                            <small class="text-gray-500"> {{ (missionForm.get('notes')?.value || '').length }}/1000 caractères </small>
+                            @if ((missionForm.get('notes')?.value || '').length > 800) {
+                                <small class="text-orange-500">
+                                    <i class="pi pi-exclamation-triangle mr-1"></i>
+                                    Approche de la limite
+                                </small>
+                            }
+                        </div>
+
+                        @if (isFieldInvalid('notes')) {
+                            <div class="validation-feedback invalid-feedback">
+                                <span>{{ getFieldError('notes') }}</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Étape 6: Récapitulatif -->
+            @if (activeIndex === 5) {
+                <div class="flex flex-col gap-4 form-step-enter">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="pi pi-eye mr-2"></i>
+                        Récapitulatif de la mission
+                    </h3>
+
+                    <!-- Statut global du formulaire -->
+                    @if (missionForm.valid) {
+                        <div class="p-4 bg-green-50 border border-green-200 rounded-lg mb-4">
+                            <div class="flex items-center">
+                                <i class="pi pi-check-circle text-green-500 text-xl mr-3"></i>
+                                <div>
+                                    <h4 class="text-green-800 font-semibold">Formulaire valide</h4>
+                                    <p class="text-green-600">Tous les champs obligatoires sont correctement remplis. Vous pouvez soumettre la mission.</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (!missionForm.valid && submitted) {
+                        <div class="p-4 bg-red-50 border border-red-200 rounded-lg mb-4">
+                            <div class="flex items-center">
+                                <i class="pi pi-exclamation-triangle text-red-500 text-xl mr-3"></i>
+                                <div>
+                                    <h4 class="text-red-800 font-semibold">Erreurs dans le formulaire</h4>
+                                    <p class="text-red-600">Veuillez corriger les erreurs dans les étapes précédentes avant de soumettre.</p>
+                                    <ul class="mt-2 text-sm">
+                                        @for (error of getAllFormErrors(); track error) {
+                                            <li class="flex items-center">
+                                                <i class="pi pi-times text-red-500 mr-2"></i>
+                                                {{ error }}
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Panneau des informations du requérant -->
+                    <p-panel header="Informations du requérant" [toggleable]="true" [collapsed]="false">
+                        <ng-template pTemplate="icons">
+                            @if (isFieldValid('requesterName') && isFieldValid('requesterPhone')) {
+                                <i class="pi pi-check text-green-500"></i>
+                            }
+                        </ng-template>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p class="font-medium mb-2">
+                                    <i class="pi pi-user mr-2 text-gray-500"></i>
+                                    <strong>Nom:</strong> {{ missionForm.get('requesterName')?.value }}
+                                    @if (isFieldValid('requesterName')) {
+                                        <i class="pi pi-check text-green-500 ml-2"></i>
+                                    }
+                                </p>
+                            </div>
+                            <div>
+                                <p class="font-medium mb-2">
+                                    <i class="pi pi-phone mr-2 text-gray-500"></i>
+                                    <strong>Téléphone:</strong>
+                                    {{ missionValidationService.formatPhoneDisplay(missionForm.get('requesterPhone')?.value) }}
+                                    @if (isFieldValid('requesterPhone')) {
+                                        <i class="pi pi-check text-green-500 ml-2"></i>
+                                    }
+                                </p>
+                            </div>
+                            <div class="col-span-1 md:col-span-2">
+                                <p class="font-medium mb-2">
+                                    <i class="pi pi-calendar mr-2 text-gray-500"></i>
+                                    <strong>Date et heure de réception:</strong>
+                                    {{ missionForm.get('receivedAt')?.value | date: 'dd/MM/yyyy à HH:mm' }}
+                                </p>
+                            </div>
+                        </div>
+                    </p-panel>
+
+                    <!-- Panneau des informations du fournisseur -->
+                    <p-panel header="Informations du fournisseur" [toggleable]="true" [collapsed]="false">
+                        <ng-template pTemplate="icons">
+                            @if (isFieldValid('providerReference') && f['fournisseur'].valid) {
+                                <i class="pi pi-check text-green-500"></i>
+                            }
+                        </ng-template>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p class="font-medium mb-2">
+                                    <i class="pi pi-hashtag mr-2 text-gray-500"></i>
+                                    <strong>Référence du fournisseur:</strong>
+                                    {{ missionForm.get('providerReference')?.value }}
+                                    @if (isFieldValid('providerReference')) {
+                                        <i class="pi pi-check text-green-500 ml-2"></i>
+                                    }
+                                </p>
+                            </div>
+                            <div>
+                                <p class="font-medium mb-2">
+                                    <i class="pi pi-building mr-2 text-gray-500"></i>
+                                    <strong>Fournisseur:</strong>
+                                    {{ getProviderById(missionForm.get('fournisseur')?.value) }}
+                                </p>
+                            </div>
+                        </div>
+                    </p-panel>
+
+                    <!-- Panneau des informations du véhicule -->
+                    <p-panel header="Informations du véhicule" [toggleable]="true" [collapsed]="false">
+                        <ng-template pTemplate="icons">
+                            @if (isFieldValid('vehicleMake') && isFieldValid('vehiclePlate')) {
+                                <i class="pi pi-check text-green-500"></i>
+                            }
+                        </ng-template>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <p class="font-medium mb-2">
+                                    <i class="pi pi-car mr-2 text-gray-500"></i>
+                                    <strong>Marque:</strong>
+                                    {{ missionForm.get('vehicleMake')?.value }}
+                                    @if (isFieldValid('vehicleMake')) {
+                                        <i class="pi pi-check text-green-500 ml-2"></i>
+                                    }
+                                </p>
+                            </div>
+                            <div>
+                                <p class="font-medium mb-2">
+                                    <i class="pi pi-cog mr-2 text-gray-500"></i>
+                                    <strong>Modèle:</strong>
+                                    {{ missionForm.get('vehicleModel')?.value || 'Non spécifié' }}
+                                </p>
+                            </div>
+                            <div>
+                                <p class="font-medium mb-2">
+                                    <i class="pi pi-id-card mr-2 text-gray-500"></i>
+                                    <strong>Immatriculation:</strong>
+                                    {{ missionValidationService.formatVehiclePlate(missionForm.get('vehiclePlate')?.value) }}
+                                    @if (isFieldValid('vehiclePlate')) {
+                                        <i class="pi pi-check text-green-500 ml-2"></i>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </p-panel>
+
+                    <!-- Panneau de localisation -->
+                    <p-panel header="Localisation" [toggleable]="true" [collapsed]="false">
+                        <ng-template pTemplate="icons">
+                            @if (isFieldValid('pickupAddress') && isFieldValid('destinationAddress')) {
+                                <i class="pi pi-check text-green-500"></i>
+                            }
+                        </ng-template>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <p class="font-medium mb-2">
+                                    <i class="pi pi-map-marker mr-2 text-blue-500"></i>
+                                    <strong>Adresse de récupération:</strong>
+                                    {{ missionForm.get('pickupAddress')?.value }}
+                                    @if (isFieldValid('pickupAddress')) {
+                                        <i class="pi pi-check text-green-500 ml-2"></i>
+                                    }
+                                </p>
+                            </div>
+                            <div>
+                                <p class="font-medium mb-2">
+                                    <i class="pi pi-map-marker mr-2 text-red-500"></i>
+                                    <strong>Adresse de destination:</strong>
+                                    {{ missionForm.get('destinationAddress')?.value }}
+                                    @if (isFieldValid('destinationAddress')) {
+                                        <i class="pi pi-check text-green-500 ml-2"></i>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </p-panel>
+
+                    <!-- Panneau des détails de la mission -->
+                    <p-panel header="Détails de la mission" [toggleable]="true" [collapsed]="false">
+                        <ng-template pTemplate="icons">
+                            @if (isFieldValid('missionTypes')) {
+                                <i class="pi pi-check text-green-500"></i>
+                            }
+                        </ng-template>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="col-span-1 md:col-span-2">
+                                <p class="font-medium mb-2">
+                                    <i class="pi pi-list mr-2 text-gray-500"></i>
+                                    <strong>Types de mission:</strong>
+                                    @if (isFieldValid('missionTypes')) {
+                                        <i class="pi pi-check text-green-500 ml-2"></i>
+                                    }
+                                </p>
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    @for (typeCode of missionForm.get('missionTypes')?.value; track typeCode) {
+                                        <p-chip [label]="getMissionTypeName(typeCode)" styleClass="bg-blue-100" icon="pi pi-cog"></p-chip>
+                                    }
+                                    @if (!missionForm.get('missionTypes')?.value?.length) {
+                                        <span class="text-red-500 italic">
+                                            <i class="pi pi-exclamation-triangle mr-1"></i>
+                                            Aucun type sélectionné
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                            <div>
+                                <p class="font-medium mb-2">
+                                    <i class="pi pi-flag mr-2 text-gray-500"></i>
+                                    <strong>Priorité:</strong>
+                                    <span
+                                        [ngClass]="{
+                                            'text-green-600': missionForm.get('priority')?.value === 'NORMAL',
+                                            'text-orange-600': missionForm.get('priority')?.value === 'HIGH',
+                                            'text-red-600': missionForm.get('priority')?.value === 'URGENT'
+                                        }"
+                                    >
+                                        {{ getPriorityName(missionForm.get('priority')?.value) }}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-span-1 md:col-span-2">
+                                <p class="font-medium mb-2">
+                                    <i class="pi pi-file-edit mr-2 text-gray-500"></i>
+                                    <strong>Notes:</strong>
+                                </p>
+                                <div class="p-3 bg-gray-50 rounded border">
+                                    @if (missionForm.get('notes')?.value) {
+                                        <p class="text-gray-700 whitespace-pre-wrap">{{ missionForm.get('notes')?.value }}</p>
+                                    }
+                                    @if (!missionForm.get('notes')?.value) {
+                                        <p class="text-gray-500 italic">Aucune note spécifiée</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </p-panel>
+                </div>
+            }
+        </form>
+    </div>
+
+    <!-- Navigation entre les étapes -->
+    <div class="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
+        <button pButton label="Précédent" icon="pi pi-arrow-left" [disabled]="activeIndex === 0" (click)="prevStep()" class="p-button-outlined"></button>
+
+        <!-- Informations sur l'étape courante -->
+        <div class="hidden md:flex items-center gap-4 text-sm text-gray-600">
+            <span>Étape {{ activeIndex + 1 }} sur {{ steps.length }}</span>
+            <div class="w-32">
+                <p-progressBar [value]="getCurrentStepCompletionPercentage()" [style]="{ height: '4px' }" [showValue]="false"></p-progressBar>
+            </div>
+            <span>{{ getCurrentStepCompletionPercentage() }}% complété</span>
+        </div>
+
+        @if (activeIndex === steps.length - 1) {
+            <button pButton label="Soumettre la mission" icon="pi pi-check" (click)="onSubmit()" [loading]="loading" [disabled]="!canSubmit()" class="p-button-success">
+                @if (loading) {
+                    <i class="pi pi-spin pi-spinner mr-2"></i>
+                }
+            </button>
+        }
+        @if (activeIndex !== steps.length - 1) {
+            <button pButton label="Suivant" icon="pi pi-arrow-right" iconPos="right" (click)="nextStep()" [disabled]="!validateCurrentStep() && submitted">
+                @if (getCurrentStepCompletionPercentage() === 100) {
+                    <i class="pi pi-check mr-2 text-green-500"></i>
+                }
+            </button>
+        }
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="flex justify-center gap-2 mt-4 pt-4 border-t border-gray-100">
+        <button pButton icon="pi pi-refresh" label="Réinitialiser" class="p-button-text p-button-sm" (click)="resetForm()" pTooltip="Réinitialiser le formulaire"></button>
+
+        <button pButton icon="pi pi-trash" label="Supprimer brouillon" class="p-button-text p-button-sm" [disabled]="!hasDraft()" (click)="clearDraft()" pTooltip="Supprimer le brouillon sauvegardé"></button>
+    </div>
+</p-card>
+
+<!-- Dialog de confirmation de création -->
+<p-dialog [(visible)]="showDialog" [header]="'Mission créée avec succès'" [modal]="true" [style]="{ width: '500px' }" [closable]="false" [resizable]="false">
+    <div class="flex flex-col items-center text-center">
+        <div class="success-icon mb-4">
+            <i class="pi pi-check text-4xl text-green-500"></i>
+        </div>
+
+        <h3 class="text-xl font-semibold text-gray-800 mb-3">Mission créée !</h3>
+
+        <p class="text-gray-600 mb-2">La mission a été créée avec succès sous la référence :</p>
+
+        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+            <code class="text-lg font-mono text-blue-800">{{ missionCreatedReference }}</code>
+        </div>
+
+        <p class="text-gray-600 mb-4">Que souhaitez-vous faire maintenant ?</p>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <div class="flex gap-3 justify-center">
+            <button pButton label="Créer une autre mission" icon="pi pi-plus" (click)="resetForm()" class="p-button-outlined"></button>
+            <button pButton label="Voir la mission" icon="pi pi-eye" (click)="viewMission()" class="p-button-primary"></button>
+        </div>
+    </ng-template>
+</p-dialog>
+
+<!-- Dialog de confirmation avant réinitialisation -->
+<p-confirmDialog
+    [style]="{ width: '450px' }"
+    header="Confirmer la réinitialisation"
+    message="Êtes-vous sûr de vouloir réinitialiser le formulaire ? Toutes les données saisies seront perdues."
+    icon="pi pi-exclamation-triangle"
+    acceptLabel="Oui, réinitialiser"
+    rejectLabel="Annuler"
+    acceptButtonStyleClass="p-button-danger"
+    rejectButtonStyleClass="p-button-outlined"
+>
+</p-confirmDialog>

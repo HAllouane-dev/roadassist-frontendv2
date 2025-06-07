@@ -1,0 +1,108 @@
+<div class="grafana-dashboard-container">
+    <!-- Header avec toolbar Sakai UI style -->
+    <div class="dashboard-header surface-card shadow-2 border-round-md mb-4">
+        <p-toolbar>
+            <div class="p-toolbar-group-start">
+                <h2 class="text-2xl font-bold text-primary m-0">
+                    <i class="pi pi-chart-line mr-2"></i>
+                    Analytics Dashboard
+                </h2>
+                <p class="text-color-secondary m-0 ml-3">Surveillance en temps réel - RoadAssist Pro</p>
+            </div>
+
+            <div class="p-toolbar-group-end">
+                <!-- Sélecteur de période de temps -->
+                <p-dropdown [options]="timeRangeOptions()" [(ngModel)]="selectedTimeRange" (onChange)="onTimeRangeChange($event)" placeholder="Période de temps" optionLabel="label" optionValue="value" class="mr-2"> </p-dropdown>
+
+                <!-- Bouton plein écran global -->
+                <p-button
+                    [icon]="isGlobalFullscreen() ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
+                    severity="info"
+                    (onClick)="toggleGlobalFullscreen()"
+                    [pTooltip]="isGlobalFullscreen() ? 'Quitter plein écran' : 'Plein écran'"
+                    tooltipPosition="bottom"
+                >
+                </p-button>
+            </div>
+        </p-toolbar>
+    </div>
+
+    <!-- Filtres par catégorie -->
+    <div class="category-filters mb-4" *ngIf="!isGlobalFullscreen()">
+        <div class="flex flex-wrap gap-2">
+            <p-button
+                *ngFor="let category of categories()"
+                [label]="category.label"
+                [severity]="selectedCategory() === category.value ? 'primary' : 'secondary'"
+                [outlined]="selectedCategory() !== category.value"
+                (onClick)="setSelectedCategory(category.value)"
+                size="small"
+                class="category-filter-btn"
+            >
+            </p-button>
+        </div>
+    </div>
+
+    <!-- Grid des dashboards -->
+    <div class="dashboard-grid" [class.fullscreen-grid]="isGlobalFullscreen()">
+        <div *ngFor="let panel of filteredPanels(); trackBy: trackByPanelId" class="dashboard-panel" [style.grid-column]="'span ' + getGridColumns(panel)" [class.panel-fullscreen]="fullscreenPanel() === panel.id">
+            <p-card class="h-full shadow-3 border-round-lg">
+                <!-- En-tête du panel -->
+                <ng-template pTemplate="header">
+                    <div class="flex justify-content-between align-items-center p-3">
+                        <div>
+                            <h3 class="text-lg font-semibold m-0 text-primary">
+                                {{ panel.title }}
+                            </h3>
+                            <p class="text-sm text-color-secondary m-0 mt-1">
+                                {{ panel.description }}
+                            </p>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <!-- Bouton de rechargement individuel -->
+                            <p-button icon="pi pi-refresh" severity="secondary" size="small" (onClick)="refreshPanel(panel.id)" [loading]="panel.isLoading" pTooltip="Actualiser ce dashboard" text> </p-button>
+
+                            <!-- Bouton plein écran individuel -->
+                            <p-button
+                                [icon]="fullscreenPanel() === panel.id ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
+                                severity="info"
+                                size="small"
+                                (onClick)="togglePanelFullscreen(panel.id)"
+                                [pTooltip]="fullscreenPanel() === panel.id ? 'Quitter plein écran' : 'Plein écran'"
+                                text
+                            >
+                            </p-button>
+                        </div>
+                    </div>
+                </ng-template>
+
+                <!-- Contenu du panel -->
+                <ng-template pTemplate="content">
+                    <div class="panel-content" [style.height.px]="getPanelHeight(panel)">
+                        <!-- Skeleton loader pendant le chargement -->
+                        <div *ngIf="panel.isLoading" class="loading-container">
+                            <p-skeleton height="100%" width="100%"></p-skeleton>
+                            <div class="loading-overlay">
+                                <i class="pi pi-spin pi-spinner text-3xl text-primary"></i>
+                                <p class="mt-2 text-color-secondary">Chargement du dashboard...</p>
+                            </div>
+                        </div>
+
+                        <!-- iFrame Grafana -->
+                        <iframe [title]="panel.title" [src]="getSafeUrl(panel.iframeUrl)" [width]="'100%'" [height]="'100%'" class="grafana-iframe border-round"> </iframe>
+                    </div>
+                </ng-template>
+            </p-card>
+        </div>
+    </div>
+
+    <!-- Dialog d'erreur -->
+    <p-dialog header="Erreur de chargement" [(visible)]="showErrorDialog" [modal]="true" [closable]="true" [style]="{ width: '400px' }">
+        <p class="text-color-secondary">Une erreur s'est produite lors du chargement d'un dashboard. Veuillez vérifier votre connexion et réessayer.</p>
+        <ng-template pTemplate="footer">
+            <p-button label="Fermer" severity="secondary" (onClick)="showErrorDialog = false"> </p-button>
+            <p-button label="Réessayer" severity="primary" (onClick)="retryFailedPanels()"> </p-button>
+        </ng-template>
+    </p-dialog>
+</div>
