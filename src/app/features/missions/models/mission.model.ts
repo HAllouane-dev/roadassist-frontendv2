@@ -38,7 +38,25 @@ export interface MissionUpdateRequest {
     notes: string;
 }
 
-export interface MissionRequest {}
+export interface MissionRequest {
+    providerReference: string;
+    providerId: number;
+    missionType: MissionTypeName[];
+    requesterName: string;
+    requesterPhone: string;
+    receivedAt: string;
+    priority: MissionPriorityEnum;
+    vehicleMake: string;
+    vehicleModel: string;
+    vehiclePlate: string;
+    pickupAddress: string;
+    destinationAddress: string;
+    notes: string;
+    pickupLatitude: number;
+    pickupLongitude: number;
+    destinationLatitude: number;
+    destinationLongitude: number;
+}
 
 export interface MissionStatusFormatted {
     name: string;
@@ -67,6 +85,9 @@ export type MissionTypeEnum = 'TOWING' | 'TRANSPORT' | 'REPAIR' | 'ASSISTANCE' |
 
 export type ProviderTypeEnum = 'INTERNATIONAL' | 'NATIONAL' | 'PRIVATE';
 
+interface MissionTypeName {
+    name: MissionTypeEnum;
+}
 interface MissionType {
     name: MissionTypeEnum;
     description: string;

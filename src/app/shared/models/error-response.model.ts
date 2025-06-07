@@ -2,7 +2,7 @@ export interface ErrorValidationResponse {
     code: string;
     message: string;
     status: number;
-    errors: FieldsErrors[];
+    fieldsErrors: FieldsErrors[];
 }
 
 export interface ErrorResponse {
