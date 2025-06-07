@@ -1,6 +1,6 @@
 import { NgIf } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonDirective } from 'primeng/button';
@@ -17,19 +17,21 @@ import { Toast } from 'primeng/toast';
 import { missionPriorities, missionStatus, missionTypes } from '../../../../shared/constants/mission/constants';
 import { MissionResponse } from '../../models/mission.model';
 import { MissionService } from '../../services/mission.service';
+import { MissionValidationService } from '../../services/mission.validation.service';
 
 @Component({
     selector: 'app-mission-details',
     standalone: true,
     templateUrl: './mission-details.component.html',
     imports: [Toast, ConfirmDialog, Tag, TabView, TabPanel, Card, ReactiveFormsModule, NgIf, DropdownModule, GalleriaModule, Divider, MultiSelect, ButtonDirective, InputText],
-    providers: [MessageService, ConfirmationService, MissionService]
+    providers: [MessageService, ConfirmationService, MissionService, MissionValidationService]
 })
 export class MissionDetailsComponent implements OnInit {
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
     private readonly missionService = inject(MissionService);
     private readonly messageService = inject(MessageService);
+    private readonly missionValidationService = inject(MissionValidationService);
     private readonly confirmationService = inject(ConfirmationService);
     private readonly fb = inject(FormBuilder);
 
@@ -49,16 +51,16 @@ export class MissionDetailsComponent implements OnInit {
 
     // Formulaire
     missionForm: FormGroup = this.fb.group({
-        requesterName: ['', Validators.required],
-        requesterPhone: [''],
-        vehicleMake: ['', Validators.required],
-        vehicleModel: [''],
-        vehiclePlate: ['', Validators.required],
-        pickupAddress: ['', Validators.required],
-        destinationAddress: ['', Validators.required],
+        requesterName: ['', [MissionValidationService.requesterNameValidator()]],
+        requesterPhone: ['', [MissionValidationService.requesterPhoneValidator()]],
+        vehicleMake: ['', [MissionValidationService.vehicleMakeValidator()]],
+        vehicleModel: ['', [MissionValidationService.vehicleModelValidator()]],
+        vehiclePlate: ['', [MissionValidationService.vehiclePlateValidator()]],
+        pickupAddress: ['', [MissionValidationService.pickupAddressValidator()]],
+        destinationAddress: ['', [MissionValidationService.destinationAddressValidator()]],
         missionPriority: ['NORMAL'],
-        notes: [''],
-        missionTypeIds: [[]],
+        notes: ['', [MissionValidationService.notesValidator()]],
+        missionTypeIds: [[], [MissionValidationService.missionTypesValidator()]],
         hasSignatureException: [false],
         signatureExceptionReason: [''],
         hasVehicleException: [false],
@@ -131,12 +133,20 @@ export class MissionDetailsComponent implements OnInit {
     }
 
     saveMission(): void {
+        this.missionForm.markAllAsTouched(); // Marquer tous les champs comme touchés pour afficher les erreurs
         if (this.missionForm.invalid) {
-            this.messageService.add({
-                severity: 'error',
-                summary: 'Formulaire invalide',
-                detail: 'Veuillez remplir tous les champs obligatoires'
-            });
+            // Collecter toutes les erreurs
+            const allErrors = this.getAllFormErrors();
+
+            if (allErrors.length > 0) {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Formulaire invalide',
+                    detail: `Veuillez corriger les ${allErrors.length} erreur(s) suivante(s):\n${allErrors.join('\n')}`,
+                    closable: true,
+                    life: 10000
+                });
+            }
             return;
         }
 
@@ -279,5 +289,80 @@ export class MissionDetailsComponent implements OnInit {
             detail: message
         });
         this.router.navigate(['/missions']);
+    }
+
+    // Collecter toutes les erreurs du formulaire
+    getAllFormErrors(): string[] {
+        const errors: string[] = [];
+
+        Object.keys(this.missionForm.controls).forEach((key) => {
+            const control = this.missionForm.get(key);
+            if (control?.errors) {
+                const fieldError = this.getFieldError(key);
+                if (fieldError) {
+                    errors.push(`${this.getFieldLabel(key)}: ${fieldError}`);
+                }
+            }
+        });
+
+        return errors;
+    }
+
+    // =====================================================
+    // MÉTHODES DE VALIDATION ET AFFICHAGE
+    // =====================================================
+    // Obtenir le label d'un champ pour l'affichage des erreurs
+    getFieldLabel(fieldName: string): string {
+        const labels: { [key: string]: string } = {
+            requesterName: 'Nom du demandeur',
+            requesterPhone: 'Téléphone du demandeur',
+            vehicleMake: 'Marque du véhicule',
+            vehicleModel: 'Modèle du véhicule',
+            vehiclePlate: 'Plaque du véhicule',
+            pickupAddress: 'Adresse de ramassage',
+            destinationAddress: 'Adresse de destination',
+            missionPriority: 'Priorité de la mission',
+            notes: 'Notes',
+            missionTypeIds: 'Types de mission'
+        };
+        return labels[fieldName] || fieldName;
+    }
+    // Obtenir le message d'erreur pour un champ
+    getFieldError(fieldName: string): string | null {
+        const field = this.missionForm.get(fieldName);
+
+        if (field && field.invalid && (field.dirty || field.touched)) {
+            const errors = field.errors;
+            if (errors) {
+                return this.missionValidationService.formatValidationError(errors);
+            }
+        }
+        return null;
+    }
+
+    // Vérifier si un champ est invalide
+    isFieldInvalid(fieldName: string): boolean {
+        const field = this.missionForm.get(fieldName);
+        return !!(field && field.invalid && (field.dirty || field.touched));
+    }
+
+    // Vérifier si un champ est valide
+    isFieldValid(fieldName: string): boolean {
+        const field = this.missionForm.get(fieldName);
+        return !!(field && field.valid && field.value && (field.dirty || field.touched));
+    }
+
+    // Vérifier si un champ est en cours de validation asynchrone
+    isFieldPending(fieldName: string): boolean {
+        const field = this.missionForm.get(fieldName);
+        return !!field?.pending;
+    }
+
+    // Obtenir la classe CSS pour un champ selon son état
+    getFieldClass(fieldName: string): string {
+        if (this.isFieldValid(fieldName)) return 'is-valid';
+        if (this.isFieldInvalid(fieldName)) return 'is-invalid';
+        if (this.isFieldPending(fieldName)) return 'is-pending';
+        return '';
     }
 }
