@@ -66,9 +66,9 @@
             <!-- Onglets -->
             <p-tabView [(activeIndex)]="activeTabIndex">
                 <!-- Onglet Informations -->
-                <p-tabPanel header="Informations">
+                <p-tabPanel header="Informations" [leftIcon]="'pi pi-info-circle mr-2'">
                     <div [ngClass]="{ hidden: editMode() }">
-                        <div class="grid">
+                        <div class="grid flex-wrap gap-4">
                             <div class="col-12 md:col-6">
                                 <p-card header="Informations du Demandeur">
                                     <div class="mb-3">
@@ -112,7 +112,9 @@
                             <div class="col-12">
                                 <p-card header="Types de mission">
                                     <div class="flex flex-wrap gap-2">
-                                        <p-tag *ngFor="let type of mission()!.missionType" [value]="type.name" [severity]="getTypeSeverity(type.name)"> </p-tag>
+                                        @for (type of mission()!.missionType; track type.name) {
+                                            <p-tag [value]="type.description" [severity]="getTypeSeverity(type.name)" class="mr-2 mb-2"></p-tag>
+                                        }
                                     </div>
                                 </p-card>
                             </div>
@@ -132,11 +134,43 @@
                                     <p-card header="Informations du Demandeur">
                                         <div class="field mb-3">
                                             <label for="requesterName" class="font-semibold block mb-2">Nom*</label>
-                                            <input id="requesterName" type="text" pInputText formControlName="requesterName" class="w-full" />
+                                            <input
+                                                id="requesterName"
+                                                type="text"
+                                                pInputText
+                                                formControlName="requesterName"
+                                                class="w-full"
+                                                [ngClass]="{
+                                                    'ng-invalid ng-dirty': isFieldInvalid('requesterName'),
+                                                    'ng-valid ng-dirty': isFieldValid('requesterName')
+                                                }"
+                                            />
+                                            @if (isFieldValid('requesterName')) {
+                                                <i class="pi pi-check validation-icon success"></i>
+                                            }
+                                            @if (isFieldInvalid('requesterName')) {
+                                                <i class="pi pi-times validation-icon error"></i>
+                                            }
                                         </div>
                                         <div class="field">
                                             <label for="requesterPhone" class="font-semibold block mb-2">Téléphone</label>
-                                            <input id="requesterPhone" type="text" pInputText formControlName="requesterPhone" class="w-full" />
+                                            <input
+                                                id="requesterPhone"
+                                                type="text"
+                                                pInputText
+                                                formControlName="requesterPhone"
+                                                class="w-full"
+                                                [ngClass]="{
+                                                    'ng-invalid ng-dirty': isFieldInvalid('requesterPhone'),
+                                                    'ng-valid ng-dirty': isFieldValid('requesterPhone')
+                                                }"
+                                            />
+                                            @if (isFieldInvalid('requesterPhone')) {
+                                                <span>{{ getFieldError('requesterPhone') }}</span>
+                                            }
+                                            @if (isFieldValid('requesterPhone')) {
+                                                <span>Téléphone valide</span>
+                                            }
                                         </div>
                                     </p-card>
                                 </div>
@@ -144,15 +178,63 @@
                                     <p-card header="Informations du Véhicule">
                                         <div class="field mb-3">
                                             <label for="vehicleMake" class="font-semibold block mb-2">Marque*</label>
-                                            <input id="vehicleMake" type="text" pInputText formControlName="vehicleMake" class="w-full" />
+                                            <input
+                                                id="vehicleMake"
+                                                type="text"
+                                                pInputText
+                                                formControlName="vehicleMake"
+                                                class="w-full"
+                                                [ngClass]="{
+                                                    'ng-invalid ng-dirty': isFieldInvalid('vehicleMake'),
+                                                    'ng-valid ng-dirty': isFieldValid('vehicleMake')
+                                                }"
+                                            />
+                                            @if (isFieldValid('vehicleMake')) {
+                                                <i class="pi pi-check validation-icon success"></i>
+                                            }
+                                            @if (isFieldInvalid('vehicleMake')) {
+                                                <i class="pi pi-times validation-icon error"></i>
+                                            }
                                         </div>
                                         <div class="field mb-3">
                                             <label for="vehicleModel" class="font-semibold block mb-2">Modèle</label>
-                                            <input id="vehicleModel" type="text" pInputText formControlName="vehicleModel" class="w-full" />
+                                            <input
+                                                id="vehicleModel"
+                                                type="text"
+                                                pInputText
+                                                formControlName="vehicleModel"
+                                                class="w-full"
+                                                [ngClass]="{
+                                                    'ng-invalid ng-dirty': isFieldInvalid('vehicleModel'),
+                                                    'ng-valid ng-dirty': isFieldValid('vehicleModel')
+                                                }"
+                                            />
+                                            @if (isFieldValid('vehicleModel')) {
+                                                <i class="pi pi-check validation-icon success"></i>
+                                            }
+                                            @if (isFieldInvalid('vehicleModel')) {
+                                                <i class="pi pi-times validation-icon error"></i>
+                                            }
                                         </div>
                                         <div class="field">
                                             <label for="vehiclePlate" class="font-semibold block mb-2">Immatriculation*</label>
-                                            <input id="vehiclePlate" type="text" pInputText formControlName="vehiclePlate" class="w-full" />
+                                            <input
+                                                id="vehiclePlate"
+                                                type="text"
+                                                pInputText
+                                                formControlName="vehiclePlate"
+                                                class="w-full"
+                                                [ngClass]="{
+                                                    'ng-invalid ng-dirty': isFieldInvalid('vehiclePlate'),
+                                                    'ng-valid ng-dirty': isFieldValid('vehiclePlate')
+                                                }"
+                                            />
+                                            @if (isFieldValid('vehiclePlate')) {
+                                                <i class="pi pi-check validation-icon success"></i>
+                                            }
+                                            @if (isFieldInvalid('vehiclePlate')) {
+                                                <i class="pi pi-times validation-icon error"></i>
+                                            }
                                         </div>
                                     </p-card>
                                 </div>
@@ -160,7 +242,24 @@
                                     <p-card header="Adresse de Prise en Charge">
                                         <div class="field">
                                             <label for="pickupAddress" class="font-semibold block mb-2">Adresse*</label>
-                                            <textarea id="pickupAddress" pInputTextarea formControlName="pickupAddress" [rows]="5" class="w-full"></textarea>
+                                            <textarea
+                                                id="pickupAddress"
+                                                pInputTextarea
+                                                formControlName="pickupAddress"
+                                                [rows]="4"
+                                                class="w-full"
+                                                maxlength="255"
+                                                [ngClass]="{
+                                                    'ng-invalid ng-dirty': isFieldInvalid('pickupAddress'),
+                                                    'ng-valid ng-dirty': isFieldValid('pickupAddress')
+                                                }"
+                                            ></textarea>
+                                            @if (isFieldValid('pickupAddress')) {
+                                                <i class="pi pi-check validation-icon success"></i>
+                                            }
+                                            @if (isFieldInvalid('pickupAddress')) {
+                                                <i class="pi pi-times validation-icon error"></i>
+                                            }
                                         </div>
                                     </p-card>
                                 </div>
@@ -168,7 +267,24 @@
                                     <p-card header="Adresse de Destination">
                                         <div class="field">
                                             <label for="destinationAddress" class="font-semibold block mb-2">Adresse*</label>
-                                            <textarea id="destinationAddress" pInputTextarea formControlName="destinationAddress" [rows]="5" class="w-full"></textarea>
+                                            <textarea
+                                                id="destinationAddress"
+                                                pInputTextarea
+                                                formControlName="destinationAddress"
+                                                [rows]="4"
+                                                class="w-full"
+                                                maxlength="255"
+                                                [ngClass]="{
+                                                    'ng-invalid ng-dirty': isFieldInvalid('destinationAddress'),
+                                                    'ng-valid ng-dirty': isFieldValid('destinationAddress')
+                                                }"
+                                            ></textarea>
+                                            @if (isFieldValid('destinationAddress')) {
+                                                <i class="pi pi-check validation-icon success"></i>
+                                            }
+                                            @if (isFieldInvalid('destinationAddress')) {
+                                                <i class="pi pi-times validation-icon error"></i>
+                                            }
                                         </div>
                                     </p-card>
                                 </div>
@@ -180,14 +296,50 @@
                                         </div>
                                         <div class="field">
                                             <label for="missionTypeIds" class="font-semibold block mb-2">Types de mission</label>
-                                            <p-multiSelect id="missionTypeIds" [options]="missionTypeOptions" formControlName="missionTypeIds" optionLabel="name" optionValue="id" display="chip" class="w-full"> </p-multiSelect>
+                                            <p-multiSelect
+                                                id="missionTypeIds"
+                                                [options]="missionTypeOptions"
+                                                formControlName="missionTypeIds"
+                                                optionLabel="name"
+                                                optionValue="code"
+                                                display="chip"
+                                                class="w-full"
+                                                [ngClass]="{
+                                                    'ng-invalid ng-dirty': isFieldInvalid('missionTypeIds'),
+                                                    'ng-valid ng-dirty': isFieldValid('missionTypeIds')
+                                                }"
+                                            >
+                                            </p-multiSelect>
+                                            @if (isFieldValid('missionTypeIds')) {
+                                                <i class="pi pi-check validation-icon success"></i>
+                                            }
+                                            @if (isFieldInvalid('missionTypeIds')) {
+                                                <i class="pi pi-times validation-icon error"></i>
+                                            }
                                         </div>
                                     </p-card>
                                 </div>
                                 <div class="col-12">
                                     <p-card header="Notes">
                                         <div class="field">
-                                            <textarea id="notes" pInputTextarea formControlName="notes" [rows]="4" class="w-full"></textarea>
+                                            <textarea
+                                                id="notes"
+                                                pInputTextarea
+                                                formControlName="notes"
+                                                [rows]="4"
+                                                maxlength="255"
+                                                class="w-full"
+                                                [ngClass]="{
+                                                    'ng-invalid ng-dirty': isFieldInvalid('notes'),
+                                                    'ng-valid ng-dirty': isFieldValid('notes')
+                                                }"
+                                            ></textarea>
+                                            @if (isFieldValid('notes')) {
+                                                <i class="pi pi-check validation-icon success"></i>
+                                            }
+                                            @if (isFieldInvalid('notes')) {
+                                                <i class="pi pi-times validation-icon error"></i>
+                                            }
                                         </div>
                                     </p-card>
                                 </div>
