@@ -117,7 +117,6 @@ export class MissionDataGridComponent implements OnInit {
     private registerCustomFilter() {
         // Filtre personnalisé pour les tableaux d'objets
         this.filterService.register('custom', (value: any[], filter: any): boolean => {
-            console.log('registerCustomFilter', filter, filter);
             if (filter === undefined || filter === null || filter === '') {
                 return true;
             }
