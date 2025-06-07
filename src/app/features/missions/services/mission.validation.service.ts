@@ -228,10 +228,10 @@ export class MissionValidationService {
 
             const value = control.value.trim();
 
-            if (value.length < 2 || value.length > 50) {
+            if (value.length < 3 || value.length > 50) {
                 return {
                     length: {
-                        message: 'La marque doit contenir entre 2 et 50 caractères'
+                        message: 'La marque doit contenir entre 3 et 50 caractères'
                     }
                 };
             }
@@ -242,6 +242,39 @@ export class MissionValidationService {
                 return {
                     pattern: {
                         message: 'La marque ne peut contenir que des lettres, espaces et tirets'
+                    }
+                };
+            }
+
+            return null;
+        };
+    }
+
+    static vehicleModelValidator(): ValidatorFn {
+        return (control: AbstractControl): ValidationErrors | null => {
+            if (!control.value) {
+                return {
+                    required: true,
+                    message: 'Le modèle du véhicule est obligatoire'
+                };
+            }
+
+            const value = control.value.trim();
+
+            if (value.length < 3 || value.length > 50) {
+                return {
+                    length: {
+                        message: 'Le modèle doit contenir entre 3 et 50 caractères'
+                    }
+                };
+            }
+
+            // Accepter lettres, chiffres, espaces et tirets
+            const modelPattern = /^[a-zA-Z0-9À-ÿ\s-]+$/;
+            if (!modelPattern.test(value)) {
+                return {
+                    pattern: {
+                        message: 'Le modèle ne peut contenir que des lettres, chiffres, espaces et tirets'
                     }
                 };
             }
