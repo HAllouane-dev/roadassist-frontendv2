@@ -629,13 +629,13 @@ export class CreateMissionFormComponent implements OnInit, OnDestroy {
             },
             vehicle: {
                 make: this.missionForm.get('vehicleMake')?.value,
-                model: this.missionForm.get('vehicleModel')?.value || 'Non spécifié',
+                model: this.missionForm.get('vehicleModel')?.value ?? 'Non spécifié',
                 plate: this.missionValidationService.formatVehiclePlate(this.missionForm.get('vehiclePlate')?.value)
             },
             mission: {
-                types: this.missionForm.get('missionTypes')?.value?.map((code: string) => this.getMissionTypeName(code)) || [],
+                types: this.missionForm.get('missionTypes')?.value?.map((code: string) => this.getMissionTypeName(code)) ?? [],
                 priority: this.getPriorityName(this.missionForm.get('priority')?.value),
-                notes: this.missionForm.get('notes')?.value || 'Aucune note'
+                notes: this.missionForm.get('notes')?.value ?? 'Aucune note'
             }
         };
     }
@@ -692,7 +692,7 @@ export class CreateMissionFormComponent implements OnInit, OnDestroy {
             try {
                 const draft = JSON.parse(draftData);
                 this.missionForm.patchValue(draft);
-                this.activeIndex = draft.currentStep || 0;
+                this.activeIndex = draft.currentStep ?? 0;
 
                 this.messageService.add({
                     severity: 'success',
