@@ -15,7 +15,7 @@ import { TabPanel, TabView } from 'primeng/tabview';
 import { Tag } from 'primeng/tag';
 import { Toast } from 'primeng/toast';
 import { missionPriorities, missionStatus, missionTypes } from '../../../../shared/constants/mission/constants';
-import { MissionResponse } from '../../models/mission.model';
+import { MissionResponse, MissionUpdateRequest } from '../../models/mission.model';
 import { MissionService } from '../../services/mission.service';
 import { MissionValidationService } from '../../services/mission.validation.service';
 
@@ -165,6 +165,38 @@ export class MissionDetailsComponent implements OnInit {
             accept: () => {
                 this.loading.set(true);
                 console.log('Mission à mettre à jour:', updatedMission);
+                this.missionService.updateMission(missionId, this.buildMissionUpdateRequest()).subscribe({
+                    next: (response) => {
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Succès',
+                            detail: 'Mission mise à jour avec succès'
+                        });
+                        this.mission.set(response);
+                        this.editMode.set(false);
+                        this.loading.set(false);
+                    },
+                    error: (error) => {
+                        this.handleError('Erreur lors de la mise à jour de la mission');
+                        console.error('Erreur détaillée:', error);
+                    }
+                });
+            },
+            reject: () => {
+                // Ne rien faire, rester en mode édition
+                this.editMode.set(true);
+                this.messageService.add({
+                    severity: 'info',
+                    summary: 'Annulation',
+                    detail: 'Modifications annulées'
+                });
+                // Réinitialiser le formulaire avec les données originales
+                if (this.mission()) {
+                    this.initializeFormData(this.mission()!);
+                }
+                // Assurez-vous de quitter le mode édition
+                this.editMode.set(false);
+                // Réinitialiser l'état de chargement
                 this.loading.set(false);
             }
         });
@@ -289,6 +321,22 @@ export class MissionDetailsComponent implements OnInit {
             detail: message
         });
         this.router.navigate(['/missions']);
+    }
+
+    private buildMissionUpdateRequest(): MissionUpdateRequest {
+        const formValue = this.missionForm.value;
+        return {
+            requesterName: formValue.requesterName,
+            requesterPhone: formValue.requesterPhone,
+            vehicleMake: formValue.vehicleMake,
+            vehicleModel: formValue.vehicleModel,
+            vehiclePlate: formValue.vehiclePlate,
+            pickupAddress: formValue.pickupAddress,
+            destinationAddress: formValue.destinationAddress,
+            missionPriority: formValue.missionPriority,
+            notes: formValue.notes,
+            missionType: formValue.missionTypeIds.map((type: string) => ({ name: type }))
+        };
     }
 
     // Collecter toutes les erreurs du formulaire

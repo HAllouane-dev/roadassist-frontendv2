@@ -26,7 +26,7 @@ export interface MissionResponse {
 
 export interface MissionUpdateRequest {
     missionType: MissionTypeEnum[];
-    MissionStatus: MissionStatusEnum;
+    MissionStatus?: MissionStatusEnum;
     requesterName: string;
     requesterPhone: string;
     vehicleMake: string;
