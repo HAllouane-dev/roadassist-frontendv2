@@ -398,3 +398,100 @@
         </div>
     }
 </div>
+
+<!-- Modal d'affectation de mission -->
+<p-dialog header="Affecter la mission a un chauffeur" [(visible)]="showAssignmentModel" [modal]="true" [style]="{ width: '50rem' }" [draggable]="false" [resizable]="false" (onHide)="(closeAssignmentModal)">
+    <!-- Résumé de la mission-->
+    <div class="mb-4">
+        <h4 class="text-lg font-semibold mb-3">Résumé de la mission</h4>
+        <div class="p-3 border-1 border-300 border-round bg-gray-50">
+            <div class="flex justify-content-between align-items-center mb-2">
+                <span class="font-semibold">Référence:</span>
+                <p-tag [value]="mission()?.id || ''" severity="info"></p-tag>
+            </div>
+            <div class="flex justify-content-between align-items-center mb-2">
+                <span class="font-semibold">Véhicule:</span>
+                <span>{{ mission()?.vehicleMake }} {{ mission()?.vehicleModel }} - {{ mission()?.vehiclePlate }}</span>
+            </div>
+            <div class="flex justify-content-between align-items-center mb-2">
+                <span class="font-semibold">De:</span>
+                <span class="text-right max-w-20rem">{{ mission()?.pickupAddress }}</span>
+            </div>
+            <div class="flex justify-content-between align-items-center mb-2">
+                <span class="font-semibold">Vers:</span>
+                <span class="text-right max-w-20rem">{{ mission()?.destinationAddress }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres chauffeurs -->
+    <div class="mb-4">
+        <h4 class="text-lg font-semibold mb-3">Sélectionner un chauffeur</h4>
+        <div class="grid">
+            <div class="col-12 md:col-6">
+                <label for="zoneFilter" class="block font-medium mb-2">Zone</label>
+                <p-dropdown id="zoneFilter" [options]="zoneOptions" [(ngModel)]="selectedZone" optionLabel="name" optionValue="code" placeholder="Toutes les zones" [showClear]="true" class="w-full" (onChange)="filterDrivers()"></p-dropdown>
+            </div>
+            <div class="col-12 md:col-6">
+                <label for="statusFilter" class="block font-medium mb-2">Statut</label>
+                <p-dropdown
+                    id="statusFilter"
+                    [options]="driverStatusOptions"
+                    [(ngModel)]="selectedDriverStatus"
+                    optionLabel="name"
+                    optionValue="code"
+                    placeholder="Tous les statuts"
+                    [showClear]="true"
+                    class="w-full"
+                    (onChange)="filterDrivers()"
+                ></p-dropdown>
+            </div>
+        </div>
+    </div>
+    <!-- Liste des chauffeurs -->
+    <div class="mb-4">
+        @if (loadingDrivers()) {
+            <div class="flex justify-content-center p-4">
+                <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+            </div>
+        } @else if (filteredDrivers().length === 0) {
+            <div class="text-center p-4">
+                <i class="pi pi-users text-4xl text-300 mb-3"></i>
+                <p class="text-600">Aucun chauffeur disponible avec les critères sélectionnés</p>
+            </div>
+        } @else {
+            <div class="max-h-20rem overflow-y-auto">
+                @for (driver of filteredDrivers(); track driver.username) {
+                    <div
+                        class="p-3 border-1 border-300 border-round mb-2 cursor-pointer transition-colors transition-duration-150"
+                        [ngClass]="{ 'bg-primary-50 border-primary-300': selectedDriver()?.reference === driver.reference }"
+                        (click)="selectDriver(driver)"
+                        (keypress)="selectDriver(driver)"
+                    >
+                        <div class="flex justify-content-between align-items-center">
+                            <div class="flex align-items-center">
+                                <i class="pi pi-user text-xl mr-3 text-500"></i>
+                                <div>
+                                    <div class="font-semibold">{{ driver.fullName }}</div>
+                                    <div class="text-sm text-600">{{ driver.email }}</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p-tag [value]="getDriverStatusLabel(driver.status)" [severity]="getDriverStatusSeverity(driver.status)" class="mb-1"> </p-tag>
+                                <div class="text-sm text-600">{{ driver.zones || 'Aucune zone' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Actions du modal -->
+    <ng-template pTemplate="footer">
+        <div class="flex justify-content-end gap-2">
+            <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="closeAssignmentModal()"></button>
+            <button pButton [label]="selectedDriver() ? 'Assigner à ' + selectedDriver()?.fullName : 'Sélectionner un chauffeur'" icon="pi pi-check" class="p-button-success" [disabled]="!selectedDriver()" (click)="assignMissionToDriver()"></button>
+        </div>
+    </ng-template>
+</p-dialog>

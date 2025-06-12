@@ -1,6 +1,5 @@
-import { NgIf } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonDirective } from 'primeng/button';
@@ -18,12 +17,14 @@ import { missionPriorities, missionStatus, missionTypes } from '../../../../shar
 import { MissionResponse, MissionUpdateRequest } from '../../models/mission.model';
 import { MissionService } from '../../services/mission.service';
 import { MissionValidationService } from '../../services/mission.validation.service';
+import { DriverResponse } from '../../models/driver.model';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
     selector: 'app-mission-details',
     standalone: true,
     templateUrl: './mission-details.component.html',
-    imports: [Toast, ConfirmDialog, Tag, TabView, TabPanel, Card, ReactiveFormsModule, NgIf, DropdownModule, GalleriaModule, Divider, MultiSelect, ButtonDirective, InputText],
+    imports: [Toast, ConfirmDialog, Tag, TabView, TabPanel, Card, ReactiveFormsModule, FormsModule, DropdownModule, GalleriaModule, Divider, MultiSelect, ButtonDirective, InputText, DialogModule],
     providers: [MessageService, ConfirmationService, MissionService, MissionValidationService]
 })
 export class MissionDetailsComponent implements OnInit {
@@ -39,6 +40,31 @@ export class MissionDetailsComponent implements OnInit {
     loading = signal(true);
     editMode = signal(false);
     mission = signal<MissionResponse | null>(null);
+    showAssignmentModel = signal(false);
+    loadingDrivers = signal(false);
+    selectedDriver = signal<DriverResponse | null>(null);
+    drivers = signal<DriverResponse[]>([]);
+    filteredDrivers = signal<DriverResponse[]>([]);
+
+    // Filtres
+    selectedZone: string | null = null;
+    selectedDriverStatus: string | null = null;
+
+    // Options pour les dropdowns
+    zoneOptions = [
+        { name: 'Paris Centre', code: 'PARIS_CENTRE' },
+        { name: 'Paris Nord', code: 'PARIS_NORD' },
+        { name: 'Paris Sud', code: 'PARIS_SUD' },
+        { name: 'Lyon Centre', code: 'LYON_CENTRE' },
+        { name: 'Marseille Centre', code: 'MARSEILLE_CENTRE' }
+    ];
+
+    driverStatusOptions = [
+        { name: 'Disponible', code: 'AVAILABLE' },
+        { name: 'En mission', code: 'ON_MISSION' },
+        { name: 'Indisponible', code: 'UNAVAILABLE' },
+        { name: 'En pause', code: 'ON_BREAK' }
+    ];
 
     // État de l'interface
     activeTabIndex = 0;
@@ -69,6 +95,139 @@ export class MissionDetailsComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadMissionData();
+    }
+
+    // Ouvrir le modèle d'affectation
+    openAssignmentModel(): void {
+        this.showAssignmentModel.set(true);
+    }
+
+    // Fermer le modèle d'affectation
+    closeAssignmentModal(): void {
+        this.showAssignmentModel.set(false);
+        this.selectedDriver.set(null);
+        this.selectedZone = null;
+        this.selectedDriverStatus = null;
+        this.drivers.set([]);
+        this.filteredDrivers.set([]);
+    }
+
+    // Charger la liste des chauffeurs
+    loadDrivers(): void {
+        this.loadingDrivers.set(true);
+
+        // TODO: Remplacer par un vrai service
+        // Simulation de données pour l'exemple
+        setTimeout(() => {
+            const mockDrivers: DriverResponse[] = [
+                {
+                    reference: '1',
+                    username: 'pierre.chauffeur',
+                    email: 'pierre.chauffeur@example.com',
+                    fullName: 'Pierre Chauffeur',
+                    status: 'AVAILABLE',
+                    zones: 'Paris Centre, Paris Nord',
+                    role: 'DRIVER',
+                    active: true
+                },
+                {
+                    reference: '2',
+                    username: 'sophie.conductrice',
+                    email: 'sophie.conductrice@example.com',
+                    fullName: 'Sophie Conductrice',
+                    status: 'ON_MISSION',
+                    zones: 'Paris Centre',
+                    role: 'DRIVER',
+                    active: true
+                },
+                {
+                    reference: '3',
+                    username: 'thomas.depanneur',
+                    email: 'thomas.depanneur@example.com',
+                    fullName: 'Thomas Dépanneur',
+                    status: 'AVAILABLE',
+                    zones: 'Paris Sud',
+                    role: 'DRIVER',
+                    active: true
+                }
+            ];
+
+            this.drivers.set(mockDrivers);
+            this.filterDrivers();
+            this.loadingDrivers.set(false);
+        }, 1000);
+    }
+
+    // Filtrer les chauffeurs selon les critères sélectionnés
+    filterDrivers(): void {
+        let filtered = this.drivers();
+
+        if (this.selectedDriverStatus) {
+            filtered = filtered.filter((driver) => driver.status === this.selectedDriverStatus);
+        }
+
+        if (this.selectedZone) {
+            filtered = filtered.filter((driver) => driver.zones?.includes(this.selectedZone!) || false);
+        }
+
+        this.filteredDrivers.set(filtered);
+    }
+
+    // Sélectionner un chauffeur
+    selectDriver(driver: DriverResponse): void {
+        this.selectedDriver.set(driver);
+    }
+
+    assignMissionToDriver(): void {
+        const driver = this.selectedDriver();
+        const missionId = this.route.snapshot.paramMap.get('id');
+
+        if (!driver || !missionId) {
+            this.handleError('Chauffeur ou ID de mission non trouvé');
+            return;
+        }
+
+        this.confirmationService.confirm({
+            message: `Voulez-vous assigner cette mission à ${driver.fullName} (${driver.username})?`,
+            header: "Confirmation d'assignation",
+            icon: 'pi pi-question-circle',
+            accept: () => {
+                this.loading.set(true);
+                console.log(`Mission ${missionId} assignée à ${driver.fullName} (${driver.username})`);
+
+                setTimeout(() => {
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Succès',
+                        detail: `Mission assignée à ${driver.fullName} (${driver.username})`
+                    });
+                    this.closeAssignmentModal();
+                    this.loading.set(false);
+                }, 1000);
+            }
+        });
+    }
+
+    // obtenir le label du status chauffeur
+    getDriverStatusLabel(status: string): string {
+        const statusOption = this.driverStatusOptions.find((s) => s.code === status);
+        return statusOption ? statusOption.name : status;
+    }
+
+    // obtenir la sévérité du status chauffeur
+    getDriverStatusSeverity(status: string): string {
+        switch (status) {
+            case 'AVAILABLE':
+                return 'success';
+            case 'ON_MISSION':
+                return 'warning';
+            case 'UNAVAILABLE':
+                return 'danger';
+            case 'ON_BREAK':
+                return 'info';
+            default:
+                return 'secondary';
+        }
     }
 
     loadMissionData(): void {
@@ -216,6 +375,7 @@ export class MissionDetailsComponent implements OnInit {
             accept: () => {
                 this.loading.set(true);
                 console.log('Changement de statut à:', newStatus);
+                this.openAssignmentModel(); // Ouvrir le modèle d'affectation si nécessaire
                 this.loading.set(false);
             }
         });
