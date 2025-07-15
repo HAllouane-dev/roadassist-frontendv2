@@ -19,12 +19,22 @@ import { MissionService } from '../../services/mission.service';
 import { MissionValidationService } from '../../services/mission.validation.service';
 import { DriverResponse } from '../../models/driver.model';
 import { DialogModule } from 'primeng/dialog';
+import { TimelineModule } from 'primeng/timeline';
+import { TableModule } from 'primeng/table';
 
+interface Signature {
+    id: number;
+    type: 'DRIVER' | 'CUSTOMER';
+    signatureUrl: string;
+    signerName: string;
+    timestamp: Date;
+    notes: string;
+}
 @Component({
     selector: 'app-mission-details',
     standalone: true,
     templateUrl: './mission-details.component.html',
-    imports: [Toast, ConfirmDialog, Tag, TabView, TabPanel, Card, ReactiveFormsModule, FormsModule, DropdownModule, GalleriaModule, Divider, MultiSelect, ButtonDirective, InputText, DialogModule],
+    imports: [Toast, ConfirmDialog, Tag, TabView, TabPanel, Card, ReactiveFormsModule, FormsModule, DropdownModule, GalleriaModule, Divider, MultiSelect, ButtonDirective, InputText, DialogModule, TimelineModule, TableModule],
     providers: [MessageService, ConfirmationService, MissionService, MissionValidationService]
 })
 export class MissionDetailsComponent implements OnInit {
@@ -95,6 +105,7 @@ export class MissionDetailsComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadMissionData();
+        this.loadDrivers();
     }
 
     // Ouvrir le modèle d'affectation
@@ -160,17 +171,28 @@ export class MissionDetailsComponent implements OnInit {
 
     // Filtrer les chauffeurs selon les critères sélectionnés
     filterDrivers(): void {
+        console.log('Filtrage des chauffeurs avec les critères:', {
+            status: this.selectedDriverStatus,
+            zone: this.selectedZone
+        });
         let filtered = this.drivers();
+
+        console.log('Chauffeurs avant filtrage:', filtered);
 
         if (this.selectedDriverStatus) {
             filtered = filtered.filter((driver) => driver.status === this.selectedDriverStatus);
+            console.log('Chauffeurs après filtrage par statut:', filtered);
         }
 
         if (this.selectedZone) {
-            filtered = filtered.filter((driver) => driver.zones?.includes(this.selectedZone!) || false);
+            const zoneName = this.zoneOptions.find((option) => option.code === this.selectedZone)?.name;
+            console.log('Zone sélectionnée:', zoneName);
+            filtered = filtered.filter((driver) => driver.zones?.includes(zoneName!) || false);
+            console.log('Chauffeurs après filtrage par zone:', filtered);
         }
 
         this.filteredDrivers.set(filtered);
+        console.log('Chauffeurs filtrés:', this.filteredDrivers());
     }
 
     // Sélectionner un chauffeur
@@ -194,16 +216,51 @@ export class MissionDetailsComponent implements OnInit {
             accept: () => {
                 this.loading.set(true);
                 console.log(`Mission ${missionId} assignée à ${driver.fullName} (${driver.username})`);
-
-                setTimeout(() => {
-                    this.messageService.add({
-                        severity: 'success',
-                        summary: 'Succès',
-                        detail: `Mission assignée à ${driver.fullName} (${driver.username})`
+                // this.missionService.assignDriverToMission(missionId, driver.reference, 'PENDING').subscribe({
+                //     next: (response) => {
+                //         console.log('Affectation réussie:', response);
+                //         this.messageService.add({
+                //             severity: 'success',
+                //             summary: 'Succès',
+                //             detail: `Mission assignée à ${driver.fullName} (${driver.username})`
+                //         });
+                //         this.mission.set(response.mission);
+                //         this.closeAssignmentModal();
+                //         this.loading.set(false);
+                //     },
+                //     error: (error) => {
+                //         console.error("Erreur lors de l'affectation:", error);
+                //         this.messageService.add({
+                //             severity: 'error',
+                //             summary: 'Erreur',
+                //             detail: "Erreur lors de l'affectation du chauffeur à la mission"
+                //         });
+                //         this.loading.set(false);
+                //         this.closeAssignmentModal();
+                //     }
+                // });
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Succès',
+                    detail: `Mission assignée à ${driver.fullName} (${driver.username})`
+                });
+                const currentMission = this.mission();
+                if (currentMission) {
+                    this.mission.set({
+                        ...currentMission,
+                        MissionStatus: 'ASSIGNED'
                     });
-                    this.closeAssignmentModal();
-                    this.loading.set(false);
-                }, 1000);
+                }
+                this.loading.set(false);
+                this.closeAssignmentModal();
+            },
+            reject: () => {
+                this.messageService.add({
+                    severity: 'info',
+                    summary: 'Annulation',
+                    detail: 'Affectation annulée'
+                });
+                this.closeAssignmentModal();
             }
         });
     }
@@ -473,6 +530,54 @@ export class MissionDetailsComponent implements OnInit {
         }
     }
 
+    getStatusColor(status: string): string {
+        const colors: { [key: string]: string } = {
+            CREATED: '#6c757d',
+            ASSIGNED: '#17a2b8',
+            ACCEPTED: '#28a745',
+            EN_ROUTE: '#007bff',
+            ARRIVED: '#ffc107',
+            LOADING: '#fd7e14',
+            IN_TRANSIT: '#20c997',
+            DELIVERED: '#6f42c1',
+            COMPLETED: '#28a745',
+            CANCELLED: '#dc3545'
+        };
+        return colors[status] || '#6c757d';
+    }
+
+    getStatusIcon(status: string): string {
+        const icons: { [key: string]: string } = {
+            CREATED: 'pi pi-file',
+            ASSIGNED: 'pi pi-user',
+            ACCEPTED: 'pi pi-check',
+            EN_ROUTE: 'pi pi-car',
+            ARRIVED: 'pi pi-map-marker',
+            LOADING: 'pi pi-truck',
+            IN_TRANSIT: 'pi pi-directions',
+            DELIVERED: 'pi pi-flag',
+            COMPLETED: 'pi pi-check-circle',
+            CANCELLED: 'pi pi-times-circle'
+        };
+        return icons[status] || 'pi pi-circle';
+    }
+
+    getStatusLabel(status: string): string {
+        const names: { [key: string]: string } = {
+            CREATED: 'Créée',
+            ASSIGNED: 'Assignée',
+            ACCEPTED: 'Acceptée',
+            EN_ROUTE: 'En route',
+            ARRIVED: 'Arrivé',
+            LOADING: 'Chargement',
+            IN_TRANSIT: 'En transit',
+            DELIVERED: 'Livré',
+            COMPLETED: 'Terminée',
+            CANCELLED: 'Annulée'
+        };
+        return names[status] || status;
+    }
+
     private handleError(message: string): void {
         this.loading.set(false);
         this.messageService.add({
@@ -572,5 +677,259 @@ export class MissionDetailsComponent implements OnInit {
         if (this.isFieldInvalid(fieldName)) return 'is-invalid';
         if (this.isFieldPending(fieldName)) return 'is-pending';
         return '';
+    }
+
+    // Données mockées pour les photos
+    mockPhotosPreLoading = [
+        {
+            id: 1,
+            url: 'https://media.ooreka.fr/public/image/voiture-accident-epave-casse-full-12852839.jpg',
+            description: 'Vue de face',
+            timestamp: new Date(2024, 11, 19, 14, 30),
+            location: "Place de l'Hôtel de Ville, Paris",
+            type: 'PRE_LOADING'
+        },
+        {
+            id: 2,
+            url: 'https://lvdneng.rosselcdn.net/sites/default/files/dpistyles_v2/ena_16_9_extra_big/2020/10/08/node_876324/49221783/public/2020/10/08/B9724857000Z.1_20201008143254_000%2BGOEGR2502.1-0.jpg?itok=Kf66gdjf1602166808',
+            description: 'Vue arrière',
+            timestamp: new Date(2024, 11, 19, 14, 31),
+            location: "Place de l'Hôtel de Ville, Paris",
+            type: 'PRE_LOADING'
+        },
+        {
+            id: 3,
+            url: 'https://th.bing.com/th/id/OIP.wr9DGQ-GRx_WeDsGYS1u4AHaE8?rs=1&pid=ImgDetMain',
+            description: 'Côté gauche',
+            timestamp: new Date(2024, 11, 19, 14, 32),
+            location: "Place de l'Hôtel de Ville, Paris",
+            type: 'PRE_LOADING'
+        },
+        {
+            id: 4,
+            url: 'https://th.bing.com/th/id/OIP.4-4aQiJJUEfLTSwJd3eRzAHaE8?w=1200&h=800&rs=1&pid=ImgDetMain',
+            description: 'Côté droit',
+            timestamp: new Date(2024, 11, 19, 14, 33),
+            location: "Place de l'Hôtel de Ville, Paris",
+            type: 'PRE_LOADING'
+        }
+    ];
+
+    mockPhotosLoading = [
+        {
+            id: 5,
+            url: 'https://static.vecteezy.com/ti/photos-gratuite/p2/8004427-voiture-accidentee-chargee-sur-une-depanneuse-dommage-vehicule-apres-accident-accident-sur-ville-rue-photo.jpg',
+            description: 'Véhicule sur la dépanneuse',
+            timestamp: new Date(2024, 11, 19, 15, 15),
+            location: "Place de l'Hôtel de Ville, Paris",
+            type: 'LOADING'
+        }
+    ];
+
+    mockPhotosPostDelivery = [
+        {
+            id: 6,
+            url: 'https://th.bing.com/th/id/R.50e419a9cf8a70d022ab1bb14e3ded84?rik=fuGcityYf0bE7w&pid=ImgRaw&r=0',
+            description: 'Vue de face - livraison',
+            timestamp: new Date(2024, 11, 19, 16, 45),
+            location: 'Avenue de Clichy, Paris',
+            type: 'POST_DELIVERY'
+        },
+        {
+            id: 7,
+            url: 'https://th.bing.com/th/id/R.50e419a9cf8a70d022ab1bb14e3ded84?rik=fuGcityYf0bE7w&pid=ImgRaw&r=0',
+            description: 'Vue arrière - livraison',
+            timestamp: new Date(2024, 11, 19, 16, 46),
+            location: 'Avenue de Clichy, Paris',
+            type: 'POST_DELIVERY'
+        },
+        {
+            id: 8,
+            url: 'https://th.bing.com/th/id/R.50e419a9cf8a70d022ab1bb14e3ded84?rik=fuGcityYf0bE7w&pid=ImgRaw&r=0',
+            description: 'État final du véhicule',
+            timestamp: new Date(2024, 11, 19, 16, 47),
+            location: 'Avenue de Clichy, Paris',
+            type: 'POST_DELIVERY'
+        }
+    ];
+
+    mockStatusHistory = [
+        {
+            status: 'CREATED',
+            timestamp: new Date(2024, 11, 19, 13, 0),
+            user: 'Jean Opérateur',
+            notes: "Mission créée suite à l'appel client",
+            location: null
+        },
+        {
+            status: 'ASSIGNED',
+            timestamp: new Date(2024, 11, 19, 13, 15),
+            user: 'Jean Opérateur',
+            notes: 'Mission assignée à Pierre Chauffeur',
+            location: null
+        },
+        {
+            status: 'ACCEPTED',
+            timestamp: new Date(2024, 11, 19, 13, 20),
+            user: 'Pierre Chauffeur',
+            notes: 'Mission acceptée par le chauffeur',
+            location: null
+        },
+        {
+            status: 'EN_ROUTE',
+            timestamp: new Date(2024, 11, 19, 13, 25),
+            user: 'Pierre Chauffeur',
+            notes: "En route vers le lieu d'intervention",
+            location: 'Garage Central, Paris'
+        },
+        {
+            status: 'ARRIVED',
+            timestamp: new Date(2024, 11, 19, 14, 30),
+            user: 'Pierre Chauffeur',
+            notes: "Arrivé sur le lieu d'intervention",
+            location: "Place de l'Hôtel de Ville, Paris"
+        },
+        {
+            status: 'LOADING',
+            timestamp: new Date(2024, 11, 19, 15, 15),
+            user: 'Pierre Chauffeur',
+            notes: 'Chargement du véhicule en cours',
+            location: "Place de l'Hôtel de Ville, Paris"
+        },
+        {
+            status: 'IN_TRANSIT',
+            timestamp: new Date(2024, 11, 19, 15, 45),
+            user: 'Pierre Chauffeur',
+            notes: 'En transit vers la destination',
+            location: 'Boulevard Saint-Michel, Paris'
+        },
+        {
+            status: 'DELIVERED',
+            timestamp: new Date(2024, 11, 19, 16, 45),
+            user: 'Pierre Chauffeur',
+            notes: 'Véhicule livré à destination',
+            location: 'Avenue de Clichy, Paris'
+        },
+        {
+            status: 'COMPLETED',
+            timestamp: new Date(2024, 11, 19, 17, 0),
+            user: 'Pierre Chauffeur',
+            notes: 'Mission terminée avec succès, signatures recueillies',
+            location: 'Avenue de Clichy, Paris'
+        }
+    ];
+
+    // Données mockées pour le chauffeur
+    mockCurrentDriver = {
+        reference: 'DRV-2025-001',
+        fullName: 'Pierre Chauffeur',
+        email: 'pierre.chauffeur@roadassist.com',
+        phone: '+33604050607',
+        status: 'ON_MISSION',
+        zone: 'Paris Centre',
+        assignedAt: new Date(2024, 11, 19, 13, 15),
+        acceptedAt: new Date(2024, 11, 19, 13, 20)
+    };
+
+    // Statistiques du chauffeur
+    mockDriverStats = {
+        totalMissions: 147,
+        completedMissions: 142,
+        averageRating: 4.8,
+        responseTime: 12
+    };
+
+    // Historique des assignations
+    mockAssignmentHistory = [
+        {
+            driverName: 'Pierre Chauffeur',
+            action: 'ASSIGNED',
+            timestamp: new Date(2024, 11, 19, 13, 15),
+            status: 'ACCEPTED',
+            notes: 'Assignation initiale',
+            assignedBy: 'Jean Opérateur'
+        },
+        {
+            driverName: 'Sophie Conductrice',
+            action: 'UNASSIGNED',
+            timestamp: new Date(2024, 11, 19, 13, 10),
+            status: 'REJECTED',
+            notes: 'Chauffeur indisponible - en mission',
+            assignedBy: 'Jean Opérateur'
+        }
+    ];
+
+    // Données mockées pour les signatures
+    mockSignatures: Signature[] = [
+        {
+            id: 1,
+            type: 'DRIVER',
+            signatureUrl: 'https://th.bing.com/th/id/OIP.N-DME1_QlRohlzmTfDfkSQHaDb?w=309&h=161&c=7&r=0&o=7&pid=1.7&rm=3',
+            signerName: 'Pierre Chauffeur',
+            timestamp: new Date(2024, 11, 19, 17, 0),
+            notes: 'Signature électronique du chauffeur'
+        },
+        {
+            id: 2,
+            type: 'CUSTOMER',
+            signatureUrl: 'https://th.bing.com/th/id/OIP.LBUr_QRVNCPsENkdyN7sgAHaE1?w=243&h=180&c=7&r=0&o=7&pid=1.7&rm=3',
+            signerName: 'Antoine Dupont',
+            timestamp: new Date(2024, 11, 19, 17, 2),
+            notes: 'Signature du client - véhicule livré en bon état'
+        }
+    ];
+
+    getSignaturesByType(type: string): Signature[] {
+        switch (type) {
+            case 'DRIVER':
+                return this.mockSignatures.filter((s) => s.type === 'DRIVER');
+            case 'CUSTOMER':
+                return this.mockSignatures.filter((s) => s.type === 'CUSTOMER');
+            default:
+                return [];
+        }
+    }
+
+    // Méthodes pour les modals
+    openPhotoModal(photo: any): void {
+        // Logique pour ouvrir le modal de photo
+        console.log('Opening photo modal for:', photo);
+        // Vous pouvez implémenter un modal ou une lightbox ici
+    }
+
+    openSignatureModal(signature: any): void {
+        // Logique pour ouvrir le modal de signature
+        console.log('Opening signature modal for:', signature);
+        // Vous pouvez implémenter un modal pour voir la signature en grand
+    }
+
+    // Méthodes utilitaires supplémentaires si nécessaire
+    downloadSignaturePDF(): void {
+        console.log('Downloading signature PDF...');
+        // Logique pour télécharger le PDF
+    }
+
+    sendSignatureByEmail(): void {
+        console.log('Sending signature by email...');
+        // Logique pour envoyer par email
+    }
+
+    getDriverStatusv2Severity(status: string): string {
+        const severities: { [key: string]: string } = {
+            AVAILABLE: 'success',
+            ON_MISSION: 'warning',
+            UNAVAILABLE: 'danger',
+            ON_BREAK: 'info'
+        };
+        return severities[status] || 'secondary';
+    }
+
+    getAssignmentActionSeverity(action: string): string {
+        const severities: { [key: string]: string } = {
+            ASSIGNED: 'info',
+            UNASSIGNED: 'warning',
+            REASSIGNED: 'success'
+        };
+        return severities[action] || 'secondary';
     }
 }

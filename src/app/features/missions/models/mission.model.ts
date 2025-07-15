@@ -1,3 +1,5 @@
+import { DriverResponse } from './driver.model';
+
 export interface MissionResponse {
     id: string;
     providerReference: string;
@@ -58,6 +60,16 @@ export interface MissionRequest {
     destinationLongitude: number;
 }
 
+export interface DriverAssignmentResponse {
+    mission: MissionResponse;
+    driver: DriverResponse;
+    assignedAt: string;
+    acceptedAt?: string;
+    completedAt?: string;
+    assignedBy: string;
+    status: AssignmentStatusEnum;
+}
+
 export interface MissionStatusFormatted {
     name: string;
     code: MissionStatusEnum;
@@ -76,6 +88,8 @@ export interface ProviderTypeFormatted {
     name: string;
     code: ProviderTypeEnum;
 }
+
+export type AssignmentStatusEnum = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED' | 'EXPIRED';
 
 export type MissionStatusEnum = 'CREATED' | 'PRE_ASSIGNED' | 'ASSIGNED' | 'ACCEPTED' | 'IN_ROUTE' | 'ARRIVED' | 'TOWING' | 'IN_TRANSIT' | 'DELIVERED' | 'CANCELLED' | 'COMPLETED';
 
