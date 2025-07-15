@@ -691,7 +691,10 @@ export class CreateMissionFormComponent implements OnInit, OnDestroy {
         if (draftData) {
             try {
                 const draft = JSON.parse(draftData);
-                this.missionForm.patchValue(draft);
+                this.missionForm.patchValue({
+                    ...draft,
+                    receivedAt: new Date(draft.receivedAt)
+                });
                 this.activeIndex = draft.currentStep ?? 0;
 
                 this.messageService.add({

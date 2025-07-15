@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { MissionRequest, MissionResponse, MissionUpdateRequest } from '../models/mission.model';
+import { AssignmentStatusEnum, DriverAssignmentResponse, MissionRequest, MissionResponse, MissionUpdateRequest } from '../models/mission.model';
 
 export class MissionService {
     private readonly apiUrl = 'http://localhost:8080/api/v1';
@@ -33,5 +33,10 @@ export class MissionService {
      */
     updateMission(id: string, mission: MissionUpdateRequest): Observable<MissionResponse> {
         return this.httpClient.put<MissionResponse>(`${this.apiUrl}/missions/${id}`, mission);
+    }
+
+    assignDriverToMission(missionId: string, driverId: string, status: AssignmentStatusEnum): Observable<DriverAssignmentResponse> {
+        const body = { driverId, status };
+        return this.httpClient.post<DriverAssignmentResponse>(`${this.apiUrl}/missions/${missionId}/assign`, body);
     }
 }

@@ -33,19 +33,9 @@ export class GrafanaDashboardComponent implements OnInit, OnDestroy {
     panels = signal<DashboardPanel[]>([
         {
             id: 'roadassist-panel-5',
-            title: 'Métriques Système',
-            description: "Vue d'ensemble des performances système",
+            title: 'Points de départ et d’arrivée des missions',
+            description: 'Distribution des points de départ et d’arrivée des missions',
             iframeUrl: 'http://localhost:3000/d-solo/fe5f05a1-8806-4da1-af4c-c1cecd98a160/roadassist?orgId=1&from=1745348749130&to=1747940749130&timezone=Africa%2FCasablanca&refresh=5s&panelId=5',
-            width: 450,
-            height: 450,
-            category: 'system',
-            isLoading: true
-        },
-        {
-            id: 'mission-dashboard-panel-1',
-            title: 'Dashboard Missions',
-            description: 'Suivi des missions en temps réel',
-            iframeUrl: 'http://localhost:3000/d-solo/39cf0f8c-ed0e-431c-b938-9009cbaddbe1/mission-dashboard?orgId=1&from=1747501051254&to=1747522651254&timezone=browser&panelId=1',
             width: 450,
             height: 450,
             category: 'missions',
@@ -53,42 +43,42 @@ export class GrafanaDashboardComponent implements OnInit, OnDestroy {
         },
         {
             id: 'roadassist-panel-3',
-            title: 'Métriques Utilisateurs',
-            description: 'Activité et performance des utilisateurs',
+            title: 'Missions Urgentes',
+            description: 'La liste des missions urgentes',
             iframeUrl: 'http://localhost:3000/d-solo/fe5f05a1-8806-4da1-af4c-c1cecd98a160/roadassist?orgId=1&from=1745349015384&to=1747941015384&timezone=Africa%2FCasablanca&refresh=5s&panelId=3',
             width: 450,
             height: 450,
-            category: 'users',
+            category: 'missions',
             isLoading: true
         },
         {
             id: 'roadassist-panel-1',
-            title: 'Vue Générale',
-            description: 'Dashboard principal avec KPI globaux',
+            title: 'Missions par priorité',
+            description: 'Répartition des missions par priorité',
             iframeUrl: 'http://localhost:3000/d-solo/fe5f05a1-8806-4da1-af4c-c1cecd98a160/roadassist?orgId=1&from=1745349030381&to=1747941030381&timezone=Africa%2FCasablanca&refresh=5s&panelId=1',
             width: 450,
             height: 450,
-            category: 'metrics',
+            category: 'missions',
             isLoading: true
         },
         {
             id: 'roadassist-panel-4',
-            title: 'Performances Réseau',
-            description: 'Latence et disponibilité des services',
+            title: 'Missions par états',
+            description: 'Répartition des missions par état',
             iframeUrl: 'http://localhost:3000/d-solo/fe5f05a1-8806-4da1-af4c-c1cecd98a160/roadassist?orgId=1&from=1745349040381&to=1747941040381&timezone=Africa%2FCasablanca&refresh=5s&panelId=4',
             width: 450,
             height: 450,
-            category: 'system',
+            category: 'missions',
             isLoading: true
         },
         {
             id: 'roadassist-panel-6',
-            title: 'Analytics Avancés',
-            description: 'Analyses détaillées et tendances',
+            title: 'Missions par type de prestataires',
+            description: 'Répartition des missions par type de prestataires',
             iframeUrl: 'http://localhost:3000/d-solo/fe5f05a1-8806-4da1-af4c-c1cecd98a160/roadassist?orgId=1&from=1745349055393&to=1747941055393&timezone=Africa%2FCasablanca&refresh=5s&panelId=6',
             width: 450,
             height: 450,
-            category: 'metrics',
+            category: 'missions',
             isLoading: true
         }
     ]);
@@ -140,7 +130,7 @@ export class GrafanaDashboardComponent implements OnInit, OnDestroy {
     ]);
 
     // Variables pour la gestion
-    selectedTimeRange = '24h';
+    selectedTimeRange = '90d';
     showErrorDialog = false;
     private readonly loadingTimeouts = new Map<string, number>();
 
