@@ -1,0 +1,106 @@
+<div class="card">
+    <div class="font-semibold text-xl mb-4">Data Table</div>
+
+    <p-toast></p-toast>
+
+    <p-table
+        #dt
+        [value]="data"
+        [dataKey]="config.dataKey"
+        [rows]="rows"
+        [rowHover]="config.rowHover"
+        [showGridlines]="config.showGridlines"
+        [loading]="loading"
+        [paginator]="true"
+        [rowsPerPageOptions]="config.rowsPerPageOptions"
+        [globalFilterFields]="config.globalFilterFields"
+        [responsiveLayout]="config.responsiveLayout"
+    >
+        <!-- caption avec recherche et botton clear -->
+        <ng-template pTemplate="caption">
+            <div class="flex justify-between items-center flex-column sm:flex-row">
+                @if (config.showClearButton) {
+                    <button pButton class="p-button-outlined mb-2" (click)="clear()">
+                        <i pButtonIcon="pi pi-filter-slash" class="mr-2"></i>
+                        <span pButtonLabel>{{ clearButtonLabel }}</span>
+                    </button>
+                }
+
+                @if (config.showSearchField) {
+                    <p-iconfield iconPosition="left" class="ml-auto">
+                        <p-inputicon>
+                            <i class="pi pi-search"></i>
+                        </p-inputicon>
+                        <input pInputText type="text" (input)="onGlobalFilter($event)" [placeholder]="searchPlaceHolder" />
+                    </p-iconfield>
+                }
+            </div>
+        </ng-template>
+
+        <!-- En-têtes de colonnes avec filtres -->
+        <ng-template pTemplate="header">
+            <tr>
+                @for (column of columns; track trackByColumn($index, column)) {
+                    <th [pSortableColumn]="column.sortable ? (column.field.toString() ?? undefined) : undefined" scope="col" [style.min-width]="column.minWidth || '10rem'">
+                        <div class="flex justify-between items-center">
+                            {{ column.header }}
+
+                            <!-- Icône de tri -->
+                            <div class="flex items-center gap-2">
+                                <p-sortIcon *ngIf="column.sortable" [field]="column.field"></p-sortIcon>
+
+                                <!-- Filtres selon le type -->
+                                <ng-container *ngIf="column.filterable">
+                                    <!-- Filtre texte -->
+                                    <p-columnFilter *ngIf="column.type === 'text'" type="text" [field]="column.field" display="menu" [placeholder]="'Recherche par ' + column.header.toLowerCase()"> </p-columnFilter>
+
+                                    <!-- Filtre select -->
+                                    <p-columnFilter *ngIf="column.type === 'select'" [field]="column.field" matchMode="equals" display="menu">
+                                        <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                                            <p-select
+                                                [ngModel]="value"
+                                                [options]="getFilterOptions(column)"
+                                                optionLabel="name"
+                                                optionValue="code"
+                                                (onChange)="onCustomFilter($event.value, filter, column)"
+                                                placeholder="Sélectionnez une option"
+                                                [showClear]="true"
+                                                styleClass="w-full"
+                                            >
+                                                <ng-template let-option pTemplate="item">
+                                                    <p-tag [value]="option.name" [severity]="getTagSeverity(column, option.code)"></p-tag>
+                                                </ng-template>
+                                            </p-select>
+                                        </ng-template>
+                                    </p-columnFilter>
+
+                                    <!-- Filtre custom pour les multi-tags -->
+                                    <p-columnFilter *ngIf="column.type === 'multiTag'" [field]="column.field" matchMode="arrayContains" display="menu">
+                                        <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                                            <p-select
+                                                [ngModel]="value"
+                                                [options]="getFilterOptions(column)"
+                                                optionLabel="name"
+                                                optionValue="code"
+                                                (onChange)="onCustomFilter($event.value, filter, column)"
+                                                placeholder="Sélectionnez un type"
+                                                [showClear]="true"
+                                            >
+                                                <ng-template let-option pTemplate="item">
+                                                    <p-tag [value]="option.name" [severity]="getTagSeverity(column, option.code)"></p-tag>
+                                                </ng-template>
+                                            </p-select>
+                                        </ng-template>
+                                    </p-columnFilter>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </th>
+                }
+            </tr>
+        </ng-template>
+
+        <!-- Corps du tableau -->
+        <ng-template pTemplate="body" let-item let-ri="rowIndex"></ng-template>
+    </p-table>
+</div>
